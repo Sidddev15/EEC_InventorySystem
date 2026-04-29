@@ -40,6 +40,7 @@ export async function listInventoryItemOptions(args?: {
     ],
     select: {
       id: true,
+      quantity: true,
       location: {
         select: {
           name: true,
@@ -48,6 +49,7 @@ export async function listInventoryItemOptions(args?: {
       variant: {
         select: {
           name: true,
+          id: true,
           inventoryType: true,
           unit: {
             select: {
@@ -66,10 +68,12 @@ export async function listInventoryItemOptions(args?: {
 
   return items.map((item) => ({
     id: item.id,
+    variantId: item.variant.id,
     label: `${item.variant.product.name} - ${item.variant.name}`,
     unit: item.variant.unit.code,
     inventoryType: item.variant.inventoryType,
     location: item.location.name,
+    currentStock: decimalToNumber(item.quantity),
   }));
 }
 

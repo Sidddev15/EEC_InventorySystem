@@ -19,8 +19,10 @@ export type InventoryListItem = {
 
 export type InventoryItemOption = {
   id: string;
+  variantId: string;
   label: string;
   unit: string;
   inventoryType: string;
   location: string;
+  currentStock: number;
 };
