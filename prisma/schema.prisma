@@ -33,6 +33,9 @@ model Unit {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   variants    ProductVariant[]
+  inventoryTransactions InventoryTransaction[]
+  productionOutputs     ProductionEntry[]
+  productionConsumptions ProductionConsumption[]
 
   @@index([isActive])
 }
@@ -46,6 +49,10 @@ model Location {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   inventoryItems InventoryItem[]
+  inventoryTransactions InventoryTransaction[]
+  productionOutputs     ProductionEntry[]
+  productionConsumptions ProductionConsumption[]
+  ledgers        StockLedger[]
 
   @@index([isActive])
   @@index([isStockHolding])
@@ -82,6 +89,10 @@ model ProductVariant {
   product        Product         @relation(fields: [productId], references: [id])
   unit           Unit            @relation(fields: [unitId], references: [id])
   inventoryItems InventoryItem[]
+  transactions   InventoryTransaction[]
+  ledgers        StockLedger[]
+  productionOutputs ProductionEntry[]
+  productionConsumptions ProductionConsumption[]
 
   @@unique([productId, name])
   @@index([productId])
@@ -100,14 +111,172 @@ model InventoryItem {
   updatedAt   DateTime       @updatedAt
   variant     ProductVariant @relation(fields: [variantId], references: [id])
   location    Location       @relation(fields: [locationId], references: [id])
+  ledgers     StockLedger[]
 
   @@unique([variantId, locationId])
   @@index([variantId])
   @@index([locationId])
 }
 
+model InventoryTransaction {
+  id              String            @id @default(cuid())
+  transactionNo   String            @unique
+  type            TransactionType
+  variantId       String
+  locationId      String
+  quantity        Decimal           @db.Decimal(14, 3)
+  unitId          String
+  referenceNo     String?
+  notes           String?
+  createdByUserId String?
+  createdAt       DateTime          @default(now())
+  variant         ProductVariant    @relation(fields: [variantId], references: [id])
+  unit            Unit              @relation(fields: [unitId], references: [id])
+  location        Location          @relation(fields: [locationId], references: [id])
+  ledgers         StockLedger[]
+  auditLogs       AuditLog[]
+
+  @@index([type])
+  @@index([variantId])
+  @@index([locationId])
+  @@index([createdAt])
+}
+
+model ProductionEntry {
+  id              String                  @id @default(cuid())
+  productionNo    String                  @unique
+  outputVariantId String
+  outputLocationId String
+  outputQuantity  Decimal                 @db.Decimal(14, 3)
+  outputUnitId    String
+  referenceNo     String?
+  notes           String?
+  createdByUserId String?
+  createdAt       DateTime                @default(now())
+  outputVariant   ProductVariant          @relation(fields: [outputVariantId], references: [id])
+  outputLocation  Location                @relation(fields: [outputLocationId], references: [id])
+  outputUnit      Unit                    @relation(fields: [outputUnitId], references: [id])
+  consumptions    ProductionConsumption[]
+  ledgers         StockLedger[]
+  auditLogs       AuditLog[]
+
+  @@index([outputVariantId])
+  @@index([outputLocationId])
+  @@index([createdAt])
+}
+
+model ProductionConsumption {
+  id                String          @id @default(cuid())
+  productionEntryId String
+  variantId         String
+  locationId        String
+  quantity          Decimal         @db.Decimal(14, 3)
+  unitId            String
+  notes             String?
+  createdAt         DateTime        @default(now())
+  productionEntry   ProductionEntry @relation(fields: [productionEntryId], references: [id])
+  variant           ProductVariant  @relation(fields: [variantId], references: [id])
+  location          Location        @relation(fields: [locationId], references: [id])
+  unit              Unit            @relation(fields: [unitId], references: [id])
+
+  @@index([productionEntryId])
+  @@index([variantId])
+  @@index([locationId])
+}
+
+model StockLedger {
+  id                     String                @id @default(cuid())
+  inventoryItemId         String
+  variantId              String
+  locationId             String
+  movementType           StockMovementType
+  quantityChange         Decimal               @db.Decimal(14, 3)
+  quantityBefore         Decimal               @db.Decimal(14, 3)
+  quantityAfter          Decimal               @db.Decimal(14, 3)
+  inventoryTransactionId String?
+  productionEntryId      String?
+  notes                  String?
+  createdByUserId        String?
+  createdAt              DateTime              @default(now())
+  inventoryItem          InventoryItem         @relation(fields: [inventoryItemId], references: [id])
+  variant                ProductVariant        @relation(fields: [variantId], references: [id])
+  location               Location              @relation(fields: [locationId], references: [id])
+  inventoryTransaction   InventoryTransaction? @relation(fields: [inventoryTransactionId], references: [id])
+  productionEntry        ProductionEntry?      @relation(fields: [productionEntryId], references: [id])
+
+  @@index([inventoryItemId])
+  @@index([variantId])
+  @@index([locationId])
+  @@index([movementType])
+  @@index([inventoryTransactionId])
+  @@index([productionEntryId])
+  @@index([createdAt])
+}
+
+model AiSuggestionLog {
+  id              String           @id @default(cuid())
+  type            AiSuggestionType
+  prompt          String
+  suggestion      String
+  accepted        Boolean?
+  context         Json?
+  createdByUserId String?
+  createdAt       DateTime         @default(now())
+
+  @@index([type])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id                     String                @id @default(cuid())
+  action                 AuditAction
+  entityType             String
+  entityId               String
+  before                 Json?
+  after                  Json?
+  inventoryTransactionId String?
+  productionEntryId      String?
+  createdByUserId        String?
+  createdAt              DateTime              @default(now())
+  inventoryTransaction   InventoryTransaction? @relation(fields: [inventoryTransactionId], references: [id])
+  productionEntry        ProductionEntry?      @relation(fields: [productionEntryId], references: [id])
+
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([inventoryTransactionId])
+  @@index([productionEntryId])
+  @@index([createdAt])
+}
+
 enum InventoryType {
   RAW_MATERIAL
   SEMI_FINISHED
   FINISHED_GOODS
+}
+
+enum TransactionType {
+  INWARD
+  OUTWARD
+  ADJUSTMENT
+}
+
+enum StockMovementType {
+  INWARD
+  OUTWARD
+  ADJUSTMENT
+  PRODUCTION_CONSUMPTION
+  PRODUCTION_OUTPUT
+}
+
+enum AiSuggestionType {
+  PRODUCT_CREATION
+  VARIANT_NAMING
+  UNIT_SUGGESTION
+  REORDER_INSIGHT
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  VOID
 }
