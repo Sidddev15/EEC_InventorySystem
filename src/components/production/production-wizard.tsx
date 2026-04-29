@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Factory, PackageCheck, Warehouse } from "lucide-react";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Button } from "@/components/ui/button";
@@ -44,9 +45,14 @@ export function ProductionWizard({
   outputItems,
   consumptionItems,
 }: ProductionWizardProps) {
+  const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
   const [outputItemId, setOutputItemId] = useState("");
   const [productionQuantity, setProductionQuantity] = useState("");
+  const [referenceNo, setReferenceNo] = useState("");
+  const [notes, setNotes] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [consumptions, setConsumptions] = useState<ConsumptionLine[]>([
     { key: crypto.randomUUID(), inventoryItemId: "", quantity: "" },
   ]);
@@ -121,8 +127,38 @@ export function ProductionWizard({
     );
   }
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    const response = await fetch("/api/production", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        outputInventoryItemId: outputItemId,
+        outputQuantity: productionQuantity,
+        referenceNo,
+        notes,
+        consumptions: consumptions.map((line) => ({
+          inventoryItemId: line.inventoryItemId,
+          quantity: line.quantity,
+        })),
+      }),
+    });
+
+    setIsSubmitting(false);
+
+    if (!response.ok) {
+      const data = (await response.json()) as { message?: string };
+      setError(data.message ?? "Unable to log production.");
+      return;
+    }
+
+    router.replace("/inventory?type=FINISHED_GOODS");
+    router.refresh();
   }
 
   return (
@@ -234,6 +270,31 @@ export function ProductionWizard({
       </div>
 
       <div className={stepIndex === 3 ? "space-y-4" : "hidden"}>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="referenceNo">
+              Reference Number
+            </label>
+            <Input
+              id="referenceNo"
+              value={referenceNo}
+              onChange={(event) => setReferenceNo(event.target.value)}
+              placeholder="Optional batch or job number"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="notes">
+              Notes
+            </label>
+            <Input
+              id="notes"
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              placeholder="Optional production note"
+            />
+          </div>
+        </div>
+
         <section className="grid gap-4 md:grid-cols-3">
           <KpiCard
             title="Output Before"
@@ -311,6 +372,11 @@ export function ProductionWizard({
       </div>
 
       <div className="flex justify-end gap-3">
+        {error ? (
+          <p className="mr-auto self-center text-sm font-medium text-destructive">
+            {error}
+          </p>
+        ) : null}
         <Button
           type="button"
           variant="outline"
@@ -329,8 +395,8 @@ export function ProductionWizard({
             Next
           </Button>
         ) : (
-          <Button type="submit" disabled>
-            Production submit in next step
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Posting" : "Confirm Production"}
           </Button>
         )}
       </div>

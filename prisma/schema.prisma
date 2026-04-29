@@ -138,12 +138,15 @@ model InventoryTransaction {
   variant         ProductVariant    @relation(fields: [variantId], references: [id])
   unit            Unit              @relation(fields: [unitId], references: [id])
   location        Location          @relation(fields: [locationId], references: [id])
+  productionEntryId String?
+  productionEntry ProductionEntry? @relation(fields: [productionEntryId], references: [id])
   ledgers         StockLedger[]
   auditLogs       AuditLog[]
 
   @@index([type])
   @@index([variantId])
   @@index([locationId])
+  @@index([productionEntryId])
   @@index([createdAt])
 }
 
@@ -162,6 +165,7 @@ model ProductionEntry {
   outputLocation  Location                @relation(fields: [outputLocationId], references: [id])
   outputUnit      Unit                    @relation(fields: [outputUnitId], references: [id])
   consumptions    ProductionConsumption[]
+  transactions    InventoryTransaction[]
   ledgers         StockLedger[]
   auditLogs       AuditLog[]
 
@@ -263,6 +267,8 @@ enum TransactionType {
   INWARD
   OUTWARD
   ADJUSTMENT
+  PRODUCTION_CONSUMPTION
+  PRODUCTION_OUTPUT
 }
 
 enum StockMovementType {
