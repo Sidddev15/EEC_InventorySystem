@@ -12,9 +12,16 @@ import {
   SlidersHorizontal,
   Tags,
 } from "lucide-react";
+import { ROLE_ALLOWED_PATHS } from "@/lib/authz";
+import { type UserRole } from "@/lib/constants/roles";
 import { cn } from "@/lib/utils";
 
-const sidebarItems = [
+const sidebarItems: Array<{
+  title: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+  exact?: boolean;
+}> = [
   {
     title: "Dashboard",
     href: "/dashboard",
@@ -58,8 +65,18 @@ const sidebarItems = [
   },
 ];
 
-export function AppSidebar() {
+type AppSidebarProps = {
+  role: UserRole;
+};
+
+export function AppSidebar({ role }: AppSidebarProps) {
   const pathname = usePathname();
+  const allowedPaths = ROLE_ALLOWED_PATHS[role];
+  const visibleItems = sidebarItems.filter((item) =>
+    allowedPaths.some(
+      (path) => item.href === path || item.href.startsWith(`${path}/`)
+    )
+  );
 
   return (
     <aside className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex lg:flex-col">
@@ -71,7 +88,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4">
-        {sidebarItems.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.exact
             ? pathname === item.href
