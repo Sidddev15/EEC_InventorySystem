@@ -16,3 +16,11 @@ export type InventoryListItem = {
   reorderLevel: string;
   status: InventoryStockStatus;
 };
+
+export type InventoryItemOption = {
+  id: string;
+  label: string;
+  unit: string;
+  inventoryType: string;
+  location: string;
+};

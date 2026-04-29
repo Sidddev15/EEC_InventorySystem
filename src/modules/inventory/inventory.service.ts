@@ -1,6 +1,7 @@
 import { InventoryType, Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import {
+  type InventoryItemOption,
   type InventoryListItem,
   type InventoryStockStatus,
   type InventoryTab,
@@ -14,6 +15,62 @@ export function normalizeInventoryTab(value?: string): InventoryTab {
   }
 
   return InventoryType.RAW_MATERIAL;
+}
+
+export async function listInventoryItemOptions(args?: {
+  inventoryType?: InventoryTab;
+}): Promise<InventoryItemOption[]> {
+  const items = await db.inventoryItem.findMany({
+    where: {
+      ...(args?.inventoryType
+        ? {
+            variant: {
+              inventoryType: args.inventoryType,
+            },
+          }
+        : {}),
+      location: {
+        isStockHolding: true,
+      },
+    },
+    orderBy: [
+      { variant: { product: { name: "asc" } } },
+      { variant: { name: "asc" } },
+      { location: { name: "asc" } },
+    ],
+    select: {
+      id: true,
+      location: {
+        select: {
+          name: true,
+        },
+      },
+      variant: {
+        select: {
+          name: true,
+          inventoryType: true,
+          unit: {
+            select: {
+              code: true,
+            },
+          },
+          product: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return items.map((item) => ({
+    id: item.id,
+    label: `${item.variant.product.name} - ${item.variant.name}`,
+    unit: item.variant.unit.code,
+    inventoryType: item.variant.inventoryType,
+    location: item.location.name,
+  }));
 }
 
 function decimalToNumber(value: Prisma.Decimal | null | undefined) {
