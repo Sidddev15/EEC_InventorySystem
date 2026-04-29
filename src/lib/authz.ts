@@ -11,6 +11,7 @@ export const ROLE_ALLOWED_PATHS: Record<UserRole, readonly string[]> = {
     "/dashboard",
     "/products",
     "/api/products",
+    "/api/variants",
     "/inventory",
     "/production",
     "/transactions",

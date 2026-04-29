@@ -1,11 +1,11 @@
 import { db } from "@/lib/db";
-import {
-  createProductSchema,
-} from "@/lib/validations/product.schema";
+import { createProductSchema } from "@/lib/validations/product.schema";
 import {
   type ProductCategoryOption,
+  type ProductDetail,
   type ProductListFilters,
   type ProductListItem,
+  type ProductOption,
 } from "./product.types";
 
 function toSlug(value: string) {
@@ -97,6 +97,78 @@ export async function listProductCategories(): Promise<ProductCategoryOption[]> 
       name: true,
     },
   });
+}
+
+export async function listProductOptions(): Promise<ProductOption[]> {
+  const products = await db.product.findMany({
+    where: { isActive: true },
+    orderBy: [{ category: { name: "asc" } }, { name: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      category: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  return products.map((product) => ({
+    id: product.id,
+    name: product.name,
+    category: product.category.name,
+  }));
+}
+
+export async function getProductDetail(id: string): Promise<ProductDetail | null> {
+  const product = await db.product.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      isActive: true,
+      category: {
+        select: {
+          name: true,
+        },
+      },
+      variants: {
+        orderBy: { name: "asc" },
+        select: {
+          id: true,
+          name: true,
+          inventoryType: true,
+          isActive: true,
+          unit: {
+            select: {
+              code: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!product) {
+    return null;
+  }
+
+  return {
+    id: product.id,
+    name: product.name,
+    category: product.category.name,
+    description: product.description,
+    isActive: product.isActive,
+    variants: product.variants.map((variant) => ({
+      id: variant.id,
+      name: variant.name,
+      unit: variant.unit.code,
+      inventoryType: variant.inventoryType,
+      isActive: variant.isActive,
+    })),
+  };
 }
 
 export async function createProduct(input: unknown) {

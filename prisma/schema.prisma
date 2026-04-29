@@ -81,6 +81,10 @@ model ProductVariant {
   unitId         String
   name           String
   inventoryType  InventoryType
+  thickness      String?
+  gsm            Int?
+  material       String?
+  size           String?
   description    String?
   minStockLevel  Decimal?        @db.Decimal(14, 3)
   reorderLevel   Decimal?        @db.Decimal(14, 3)
