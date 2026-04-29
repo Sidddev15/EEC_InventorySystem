@@ -6,7 +6,13 @@ export type ProductListFilters = {
 export type ProductListItem = {
   id: string;
   name: string;
+  slug: string;
   category: string;
   variantsCount: number;
   isActive: boolean;
+};
+
+export type ProductCategoryOption = {
+  id: string;
+  name: string;
 };

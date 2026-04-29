@@ -123,6 +123,14 @@ const productSeeds = [
   },
 ];
 
+function toSlug(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 async function main() {
   const categoryByName = new Map<string, { id: string }>();
   const unitByCode = new Map<string, { id: string }>();
@@ -186,6 +194,7 @@ async function main() {
       create: {
         categoryId: category.id,
         name: productSeed.name,
+        slug: toSlug(productSeed.name),
       },
       select: { id: true },
     });

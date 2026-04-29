@@ -1,5 +1,33 @@
 import { db } from "@/lib/db";
-import { type ProductListFilters, type ProductListItem } from "./product.types";
+import {
+  createProductSchema,
+} from "@/lib/validations/product.schema";
+import {
+  type ProductCategoryOption,
+  type ProductListFilters,
+  type ProductListItem,
+} from "./product.types";
+
+function toSlug(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+async function allocateProductSlug(name: string) {
+  const baseSlug = toSlug(name);
+  let slug = baseSlug;
+  let suffix = 2;
+
+  while (await db.product.findUnique({ where: { slug }, select: { id: true } })) {
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+
+  return slug;
+}
 
 export async function listProducts(
   filters: ProductListFilters = {}
@@ -35,6 +63,7 @@ export async function listProducts(
     select: {
       id: true,
       name: true,
+      slug: true,
       isActive: true,
       category: {
         select: {
@@ -52,8 +81,55 @@ export async function listProducts(
   return products.map((product) => ({
     id: product.id,
     name: product.name,
+    slug: product.slug,
     category: product.category.name,
     variantsCount: product._count.variants,
     isActive: product.isActive,
   }));
+}
+
+export async function listProductCategories(): Promise<ProductCategoryOption[]> {
+  return db.category.findMany({
+    where: { isActive: true },
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+}
+
+export async function createProduct(input: unknown) {
+  const data = createProductSchema.parse(input);
+
+  const duplicate = await db.product.findFirst({
+    where: {
+      categoryId: data.categoryId,
+      name: {
+        equals: data.name,
+        mode: "insensitive",
+      },
+    },
+    select: { id: true },
+  });
+
+  if (duplicate) {
+    throw new Error("A product with this name already exists in the selected category.");
+  }
+
+  const slug = await allocateProductSlug(data.name);
+
+  return db.product.create({
+    data: {
+      categoryId: data.categoryId,
+      name: data.name,
+      slug,
+      description: data.description || null,
+      isActive: data.isActive,
+    },
+    select: {
+      id: true,
+      slug: true,
+    },
+  });
 }

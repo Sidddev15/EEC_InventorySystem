@@ -10,6 +10,7 @@ export const ROLE_ALLOWED_PATHS: Record<UserRole, readonly string[]> = {
   ADMIN: [
     "/dashboard",
     "/products",
+    "/api/products",
     "/inventory",
     "/production",
     "/transactions",
