@@ -1,6 +1,9 @@
 import { AuditAction, StockMovementType, TransactionType } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
-import { stockInwardSchema } from "@/lib/validations/inventory.schema";
+import {
+  stockAdjustmentSchema,
+  stockInwardSchema,
+} from "@/lib/validations/inventory.schema";
 
 async function nextTransactionNo(prefix: string) {
   return `${prefix}-${Date.now()}`;
@@ -81,6 +84,99 @@ export async function addStockInward(input: unknown, userId?: string) {
           quantityBefore: quantityBefore.toString(),
           quantityChange: String(quantityChange),
           quantityAfter: quantityAfter.toString(),
+        },
+        inventoryTransactionId: transaction.id,
+        createdByUserId: userId,
+      },
+    });
+
+    return transaction;
+  });
+}
+
+export async function adjustStock(input: unknown, userId?: string) {
+  const data = stockAdjustmentSchema.parse(input);
+
+  return db.$transaction(async (tx) => {
+    const inventoryItem = await tx.inventoryItem.findUnique({
+      where: { id: data.inventoryItemId },
+      select: {
+        id: true,
+        quantity: true,
+        variantId: true,
+        locationId: true,
+        variant: {
+          select: {
+            unitId: true,
+          },
+        },
+      },
+    });
+
+    if (!inventoryItem) {
+      throw new Error("Inventory item not found.");
+    }
+
+    const quantityBefore = inventoryItem.quantity;
+    const signedQuantity =
+      data.adjustmentType === "INCREASE" ? data.quantity : -data.quantity;
+    const quantityAfter = quantityBefore.plus(signedQuantity);
+
+    if (quantityAfter.isNegative()) {
+      throw new Error("Adjustment cannot make stock negative.");
+    }
+
+    const transaction = await tx.inventoryTransaction.create({
+      data: {
+        transactionNo: await nextTransactionNo("ADJ"),
+        type: TransactionType.ADJUSTMENT,
+        variantId: inventoryItem.variantId,
+        locationId: inventoryItem.locationId,
+        unitId: inventoryItem.variant.unitId,
+        quantity: signedQuantity,
+        referenceNo: data.referenceNo || null,
+        notes: data.reason,
+        createdByUserId: userId,
+      },
+      select: { id: true, transactionNo: true },
+    });
+
+    await tx.inventoryItem.update({
+      where: { id: inventoryItem.id },
+      data: {
+        quantity: quantityAfter,
+      },
+    });
+
+    await tx.stockLedger.create({
+      data: {
+        inventoryItemId: inventoryItem.id,
+        variantId: inventoryItem.variantId,
+        locationId: inventoryItem.locationId,
+        movementType: StockMovementType.ADJUSTMENT,
+        quantityChange: signedQuantity,
+        quantityBefore,
+        quantityAfter,
+        inventoryTransactionId: transaction.id,
+        notes: data.reason,
+        createdByUserId: userId,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        action: AuditAction.UPDATE,
+        entityType: "InventoryItem",
+        entityId: inventoryItem.id,
+        before: {
+          quantity: quantityBefore.toString(),
+        },
+        after: {
+          quantity: quantityAfter.toString(),
+          adjustmentType: data.adjustmentType,
+          quantityChange: String(signedQuantity),
+          reason: data.reason,
+          referenceNo: data.referenceNo || null,
         },
         inventoryTransactionId: transaction.id,
         createdByUserId: userId,

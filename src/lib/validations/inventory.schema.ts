@@ -10,3 +10,11 @@ export const stockInwardSchema = z.object({
 });
 
 export type StockInwardInput = z.infer<typeof stockInwardSchema>;
+
+export const stockAdjustmentSchema = z.object({
+  inventoryItemId: z.string().trim().min(1),
+  adjustmentType: z.enum(["INCREASE", "DECREASE"]),
+  quantity: z.coerce.number().positive(),
+  reason: z.string().trim().min(3).max(500),
+  referenceNo: z.string().trim().max(80).optional().or(z.literal("")),
+});
