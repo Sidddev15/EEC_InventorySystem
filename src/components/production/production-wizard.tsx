@@ -6,6 +6,8 @@ import { Factory, PackageCheck, Warehouse } from "lucide-react";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Button } from "@/components/ui/button";
 import { DataTableShell } from "@/components/ui/data-table-shell";
+import { EmptyState } from "@/components/ui/empty-state";
+import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -59,6 +61,14 @@ export function ProductionWizard({
 
   const outputItem = outputItems.find((item) => item.id === outputItemId);
   const producedQuantity = Number(productionQuantity) || 0;
+  const hasValidConsumption = consumptions.every(
+    (line) => line.inventoryItemId && Number(line.quantity) > 0
+  );
+  const canGoNext =
+    (stepIndex === 0 && Boolean(outputItemId)) ||
+    (stepIndex === 1 && producedQuantity > 0) ||
+    (stepIndex === 2 && hasValidConsumption) ||
+    stepIndex === steps.length - 1;
 
   const previewRows = useMemo(() => {
     const rawRows = consumptions
@@ -197,6 +207,9 @@ export function ProductionWizard({
             </option>
           ))}
         </select>
+        <p className="text-xs leading-5 text-muted-foreground">
+          Select the finished or semi-finished variant that will receive stock.
+        </p>
       </div>
 
       <div className={stepIndex === 1 ? "space-y-1.5" : "hidden"}>
@@ -212,6 +225,10 @@ export function ProductionWizard({
           onChange={(event) => setProductionQuantity(event.target.value)}
           placeholder="Quantity produced"
         />
+        <p className="text-xs leading-5 text-muted-foreground">
+          Enter the actual accepted production quantity. This will increase
+          finished stock after confirmation.
+        </p>
       </div>
 
       <div className={stepIndex === 2 ? "space-y-3" : "hidden"}>
@@ -267,6 +284,10 @@ export function ProductionWizard({
         <Button type="button" variant="outline" onClick={addConsumptionLine}>
           Add Material
         </Button>
+        <p className="text-xs leading-5 text-muted-foreground">
+          Add every raw material consumed for this production entry. Stock will
+          decrease from the selected material locations.
+        </p>
       </div>
 
       <div className={stepIndex === 3 ? "space-y-4" : "hidden"}>
@@ -358,11 +379,11 @@ export function ProductionWizard({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    className="h-24 text-center text-muted-foreground"
-                    colSpan={5}
-                  >
-                    Complete the previous steps to preview stock conversion.
+                  <TableCell className="p-0" colSpan={5}>
+                    <EmptyState
+                      title="Stock preview is not ready"
+                      description="Complete product, output quantity, and consumed material details to see before and after stock."
+                    />
                   </TableCell>
                 </TableRow>
               )}
@@ -373,9 +394,9 @@ export function ProductionWizard({
 
       <div className="flex justify-end gap-3">
         {error ? (
-          <p className="mr-auto self-center text-sm font-medium text-destructive">
-            {error}
-          </p>
+          <div className="mr-auto">
+            <FormMessage tone="error">{error}</FormMessage>
+          </div>
         ) : null}
         <Button
           type="button"
@@ -388,6 +409,7 @@ export function ProductionWizard({
         {stepIndex < steps.length - 1 ? (
           <Button
             type="button"
+            disabled={!canGoNext}
             onClick={() =>
               setStepIndex((current) => Math.min(current + 1, steps.length - 1))
             }

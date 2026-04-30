@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
 import { type InventoryItemOption } from "@/modules/inventory/inventory.types";
 
@@ -110,12 +111,18 @@ export function AdjustmentForm({ items }: AdjustmentFormProps) {
         />
       </div>
 
-      {error ? <p className="text-sm font-medium text-destructive">{error}</p> : null}
+      {items.length === 0 ? (
+        <FormMessage tone="warning">
+          No inventory items are available for adjustment.
+        </FormMessage>
+      ) : null}
 
-      <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+      {error ? <FormMessage tone="error">{error}</FormMessage> : null}
+
+      <FormMessage tone="warning">
         Stock adjustments are audit-visible corrections. Use inward,
         production, or dispatch flows for normal movement.
-      </div>
+      </FormMessage>
 
       <div className="flex justify-end gap-3">
         <Button type="button" variant="outline" onClick={() => router.back()}>

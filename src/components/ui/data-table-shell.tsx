@@ -19,8 +19,8 @@ export function DataTableShell({
 }: DataTableShellProps) {
   return (
     <Card className={cn("overflow-hidden", className)}>
-      <CardHeader className="border-b">
-        <div className="flex items-start justify-between gap-3">
+      <CardHeader className="border-b bg-card">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <CardTitle className="text-base">{title}</CardTitle>
             {description ? (
@@ -29,7 +29,7 @@ export function DataTableShell({
               </p>
             ) : null}
           </div>
-          {actions ? <div className="shrink-0">{actions}</div> : null}
+          {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
         </div>
       </CardHeader>
       <CardContent className="p-0">{children}</CardContent>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ReorderInsightButton } from "@/components/ai/reorder-insight-button";
 import { buttonVariants } from "@/components/ui/button";
 import { DataTableShell } from "@/components/ui/data-table-shell";
+import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table,
@@ -45,7 +46,9 @@ export function InventoryTable({ items }: InventoryTableProps) {
                 <TableCell className="font-medium">{item.itemName}</TableCell>
                 <TableCell>{item.category}</TableCell>
                 <TableCell>{item.variant}</TableCell>
-                <TableCell>{item.currentStock}</TableCell>
+                <TableCell className="font-semibold tabular-nums">
+                  {item.currentStock}
+                </TableCell>
                 <TableCell>{item.unit}</TableCell>
                 <TableCell>{item.location}</TableCell>
                 <TableCell>{item.reorderLevel}</TableCell>
@@ -68,10 +71,13 @@ export function InventoryTable({ items }: InventoryTableProps) {
           ) : (
             <TableRow>
               <TableCell
-                className="h-24 text-center text-muted-foreground"
+                className="p-0"
                 colSpan={9}
               >
-                No inventory items found.
+                <EmptyState
+                  title="No inventory items found"
+                  description="Create variants and record inward stock to start tracking location-wise quantity."
+                />
               </TableCell>
             </TableRow>
           )}

@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
 import { type InventoryItemOption } from "@/modules/inventory/inventory.types";
 
@@ -97,7 +98,14 @@ export function InwardForm({ items }: InwardFormProps) {
         />
       </div>
 
-      {error ? <p className="text-sm font-medium text-destructive">{error}</p> : null}
+      {items.length === 0 ? (
+        <FormMessage tone="warning">
+          No raw material inventory items are available. Create a raw material
+          variant before adding inward stock.
+        </FormMessage>
+      ) : null}
+
+      {error ? <FormMessage tone="error">{error}</FormMessage> : null}
 
       <div className="flex justify-end gap-3">
         <Button type="button" variant="outline" onClick={() => router.back()}>

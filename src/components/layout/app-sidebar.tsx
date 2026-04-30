@@ -118,9 +118,9 @@ export function AppSidebar({ role }: AppSidebarProps) {
         </nav>
       </aside>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-sidebar px-2 py-2 text-sidebar-foreground shadow-lg lg:hidden">
-        <div className="grid grid-cols-4 gap-1">
-          {visibleItems.slice(0, 4).map((item) => {
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-sidebar-border bg-sidebar px-2 py-2 text-sidebar-foreground shadow-lg lg:hidden">
+        <div className="flex gap-1 overflow-x-auto pb-1">
+          {visibleItems.map((item) => {
             const Icon = item.icon;
             const isActive = item.exact
               ? pathname === item.href
@@ -131,7 +131,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg px-2 text-[11px] font-medium text-slate-300",
+                  "flex min-h-14 min-w-20 flex-col items-center justify-center gap-1 rounded-lg px-2 text-[11px] font-medium text-slate-300",
                   isActive && "bg-sidebar-accent text-white"
                 )}
               >

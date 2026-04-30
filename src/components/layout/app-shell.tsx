@@ -19,7 +19,7 @@ export async function AppShell({ children }: AppShellProps) {
       <AppSidebar role={user.role} />
       <div className="flex min-w-0 flex-1 flex-col">
         <AppTopbar user={user} />
-        <main className="flex-1 px-4 py-5 pb-24 sm:px-6 lg:px-8 lg:pb-5">
+        <main className="flex-1 px-3 py-4 pb-24 sm:px-6 sm:py-5 lg:px-8 lg:pb-5">
           {children}
         </main>
       </div>

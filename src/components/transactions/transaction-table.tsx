@@ -1,4 +1,5 @@
 import { DataTableShell } from "@/components/ui/data-table-shell";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Table,
   TableBody,
@@ -40,10 +41,12 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
             transactions.map((transaction) => (
               <TableRow key={transaction.id}>
                 <TableCell>{transaction.dateTime}</TableCell>
-                <TableCell>{transaction.type}</TableCell>
+                <TableCell className="font-medium">{transaction.type}</TableCell>
                 <TableCell className="font-medium">{transaction.product}</TableCell>
                 <TableCell>{transaction.variant}</TableCell>
-                <TableCell>{transaction.quantity}</TableCell>
+                <TableCell className="font-semibold tabular-nums">
+                  {transaction.quantity}
+                </TableCell>
                 <TableCell>{transaction.unit}</TableCell>
                 <TableCell>{transaction.source}</TableCell>
                 <TableCell>{transaction.destination}</TableCell>
@@ -55,10 +58,13 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
           ) : (
             <TableRow>
               <TableCell
-                className="h-24 text-center text-muted-foreground"
+                className="p-0"
                 colSpan={11}
               >
-                No transactions found.
+                <EmptyState
+                  title="No transactions found"
+                  description="Inventory movements will appear here after inward, adjustment, production, or dispatch entries."
+                />
               </TableCell>
             </TableRow>
           )}

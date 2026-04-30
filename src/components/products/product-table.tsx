@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { DataTableShell } from "@/components/ui/data-table-shell";
+import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table,
@@ -63,10 +64,21 @@ export function ProductTable({ products }: ProductTableProps) {
           ) : (
             <TableRow>
               <TableCell
-                className="h-24 text-center text-muted-foreground"
+                className="p-0"
                 colSpan={5}
               >
-                No products found.
+                <EmptyState
+                  title="No products found"
+                  description="Create a parent product first, then add variants under it. Stock will be tracked at variant level."
+                  action={
+                    <Link
+                      className={cn(buttonVariants({ size: "sm" }))}
+                      href="/products/new"
+                    >
+                      New Product
+                    </Link>
+                  }
+                />
               </TableCell>
             </TableRow>
           )}

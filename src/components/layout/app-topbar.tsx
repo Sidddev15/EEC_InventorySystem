@@ -14,8 +14,8 @@ type AppTopbarProps = {
 export function AppTopbar({ user }: AppTopbarProps) {
   return (
     <header className="sticky top-0 z-20 border-b bg-card">
-      <div className="flex h-14 items-center gap-3 px-4 sm:px-6 lg:px-8">
-        <div className="min-w-0 flex-1">
+      <div className="flex h-14 items-center gap-2 px-3 sm:gap-3 sm:px-6 lg:px-8">
+        <div className="hidden min-w-0 flex-1 sm:block">
           <form className="relative max-w-md" action="/products">
             <Search
               className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
@@ -30,9 +30,13 @@ export function AppTopbar({ user }: AppTopbarProps) {
           </form>
         </div>
 
-        <Link className={cn(buttonVariants({ size: "lg" }))} href="/factory">
+        <Link
+          className={cn(buttonVariants({ size: "lg" }), "ml-auto sm:ml-0")}
+          href="/factory"
+        >
           <Plus className="size-4" aria-hidden="true" />
-          Factory Action
+          <span className="hidden sm:inline">Factory Action</span>
+          <span className="sm:hidden">Action</span>
         </Link>
 
         <div className="hidden border-l pl-3 text-right sm:block">
