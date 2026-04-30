@@ -25,7 +25,16 @@ export function VariantWizard({
   const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuggestingName, setIsSuggestingName] = useState(false);
+  const [productId, setProductId] = useState(initialProductId ?? "");
+  const [variantName, setVariantName] = useState("");
+  const [thickness, setThickness] = useState("");
+  const [gsm, setGsm] = useState("");
+  const [material, setMaterial] = useState("");
+  const [size, setSize] = useState("");
+  const [inventoryType, setInventoryType] = useState("FINISHED_GOODS");
 
   const defaultUnitId = useMemo(() => {
     return units.find((unit) => unit.code === "NOS")?.id ?? units[0]?.id ?? "";
@@ -37,6 +46,38 @@ export function VariantWizard({
 
   function goBack() {
     setStepIndex((current) => Math.max(current - 1, 0));
+  }
+
+  async function suggestName() {
+    setAiSuggestion(null);
+    setIsSuggestingName(true);
+
+    const response = await fetch("/api/ai/variant-name", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        productId,
+        thickness,
+        gsm,
+        material,
+        size,
+        inventoryType,
+      }),
+    });
+
+    setIsSuggestingName(false);
+
+    if (!response.ok) {
+      const data = (await response.json()) as { message?: string };
+      setAiSuggestion(data.message ?? "Unable to suggest variant name.");
+      return;
+    }
+
+    const data = (await response.json()) as { suggestion: string };
+    setVariantName(data.suggestion);
+    setAiSuggestion(`Suggested variant name: ${data.suggestion}`);
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -73,6 +114,11 @@ export function VariantWizard({
 
     router.refresh();
     setStepIndex(0);
+    setVariantName("");
+    setThickness("");
+    setGsm("");
+    setMaterial("");
+    setSize("");
     event.currentTarget.reset();
   }
 
@@ -103,7 +149,8 @@ export function VariantWizard({
             id="productId"
             name="productId"
             required
-            defaultValue={initialProductId}
+            value={productId}
+            onChange={(event) => setProductId(event.target.value)}
           >
             <option value="">Select parent product</option>
             {products.map((product) => (
@@ -125,7 +172,19 @@ export function VariantWizard({
             name="name"
             required
             placeholder="Floor Filter 50mm"
+            value={variantName}
+            onChange={(event) => setVariantName(event.target.value)}
           />
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!productId || isSuggestingName}
+              onClick={suggestName}
+            >
+              {isSuggestingName ? "Suggesting" : "Suggest variant name"}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -134,25 +193,50 @@ export function VariantWizard({
           <label className="text-sm font-medium" htmlFor="thickness">
             Thickness
           </label>
-          <Input id="thickness" name="thickness" placeholder="50mm" />
+          <Input
+            id="thickness"
+            name="thickness"
+            placeholder="50mm"
+            value={thickness}
+            onChange={(event) => setThickness(event.target.value)}
+          />
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium" htmlFor="gsm">
             GSM
           </label>
-          <Input id="gsm" name="gsm" inputMode="numeric" placeholder="250" />
+          <Input
+            id="gsm"
+            name="gsm"
+            inputMode="numeric"
+            placeholder="250"
+            value={gsm}
+            onChange={(event) => setGsm(event.target.value)}
+          />
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium" htmlFor="material">
             Material
           </label>
-          <Input id="material" name="material" placeholder="Synthetic media" />
+          <Input
+            id="material"
+            name="material"
+            placeholder="Synthetic media"
+            value={material}
+            onChange={(event) => setMaterial(event.target.value)}
+          />
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium" htmlFor="size">
             Size
           </label>
-          <Input id="size" name="size" placeholder="1m x 20m" />
+          <Input
+            id="size"
+            name="size"
+            placeholder="1m x 20m"
+            value={size}
+            onChange={(event) => setSize(event.target.value)}
+          />
         </div>
       </div>
 
@@ -185,7 +269,8 @@ export function VariantWizard({
             id="inventoryType"
             name="inventoryType"
             required
-            defaultValue="FINISHED_GOODS"
+            value={inventoryType}
+            onChange={(event) => setInventoryType(event.target.value)}
           >
             <option value="RAW_MATERIAL">Raw Material</option>
             <option value="SEMI_FINISHED">Semi-Finished</option>
@@ -209,6 +294,12 @@ export function VariantWizard({
           naming. Variants are the operational stock truth.
         </div>
       </div>
+
+      {aiSuggestion ? (
+        <p className="rounded-lg border bg-muted/40 p-3 text-sm font-medium text-foreground">
+          {aiSuggestion}
+        </p>
+      ) : null}
 
       {error ? <p className="text-sm font-medium text-destructive">{error}</p> : null}
 

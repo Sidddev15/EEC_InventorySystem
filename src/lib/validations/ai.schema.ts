@@ -11,3 +11,17 @@ export const aiSuggestionRequestSchema = z.object({
   context: z.record(z.string(), z.unknown()).optional(),
   fallback: z.string().trim().min(1).max(2000),
 });
+
+export const productDuplicateCheckSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  categoryId: z.string().trim().optional(),
+});
+
+export const variantNameSuggestionSchema = z.object({
+  productId: z.string().trim().min(1),
+  thickness: z.string().trim().max(50).optional().or(z.literal("")),
+  gsm: z.string().trim().max(20).optional().or(z.literal("")),
+  material: z.string().trim().max(120).optional().or(z.literal("")),
+  size: z.string().trim().max(120).optional().or(z.literal("")),
+  inventoryType: z.string().trim().max(80).optional(),
+});
