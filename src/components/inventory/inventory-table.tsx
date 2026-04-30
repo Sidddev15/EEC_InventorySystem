@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ReorderInsightButton } from "@/components/ai/reorder-insight-button";
 import { buttonVariants } from "@/components/ui/button";
 import { DataTableShell } from "@/components/ui/data-table-shell";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -52,12 +53,15 @@ export function InventoryTable({ items }: InventoryTableProps) {
                   <StatusBadge status={item.status} />
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link
-                    className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-                    href={`/inventory/inward?item=${item.id}`}
-                  >
-                    Add Stock
-                  </Link>
+                  <div className="flex justify-end gap-2">
+                    <ReorderInsightButton inventoryItemId={item.id} />
+                    <Link
+                      className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                      href={`/inventory/inward?item=${item.id}`}
+                    >
+                      Add Stock
+                    </Link>
+                  </div>
                 </TableCell>
               </TableRow>
             ))

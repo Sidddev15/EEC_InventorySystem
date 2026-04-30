@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,10 +35,9 @@ export function VariantWizard({
   const [material, setMaterial] = useState("");
   const [size, setSize] = useState("");
   const [inventoryType, setInventoryType] = useState("FINISHED_GOODS");
-
-  const defaultUnitId = useMemo(() => {
-    return units.find((unit) => unit.code === "NOS")?.id ?? units[0]?.id ?? "";
-  }, [units]);
+  const [unitId, setUnitId] = useState(
+    () => units.find((unit) => unit.code === "NOS")?.id ?? units[0]?.id ?? ""
+  );
 
   function goNext() {
     setStepIndex((current) => Math.min(current + 1, steps.length - 1));
@@ -78,6 +77,71 @@ export function VariantWizard({
     const data = (await response.json()) as { suggestion: string };
     setVariantName(data.suggestion);
     setAiSuggestion(`Suggested variant name: ${data.suggestion}`);
+  }
+
+  async function suggestUnit() {
+    setAiSuggestion(null);
+
+    const response = await fetch("/api/ai/unit-suggestion", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        variantName,
+        material,
+        size,
+        inventoryType,
+      }),
+    });
+
+    if (!response.ok) {
+      const data = (await response.json()) as { message?: string };
+      setAiSuggestion(data.message ?? "Unable to suggest unit.");
+      return;
+    }
+
+    const data = (await response.json()) as {
+      suggestion: string;
+      unitCode: string;
+    };
+    const suggestedUnit = units.find((unit) => unit.code === data.unitCode);
+
+    if (suggestedUnit) {
+      setUnitId(suggestedUnit.id);
+    }
+
+    setAiSuggestion(data.suggestion);
+  }
+
+  async function reviewMissingFields() {
+    setAiSuggestion(null);
+
+    const selectedUnit = units.find((unit) => unit.id === unitId);
+    const response = await fetch("/api/ai/missing-fields", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        variantName,
+        thickness,
+        gsm,
+        material,
+        size,
+        unitCode: selectedUnit?.code,
+        inventoryType,
+      }),
+    });
+
+    if (!response.ok) {
+      const data = (await response.json()) as { message?: string };
+      setAiSuggestion(data.message ?? "Unable to review missing fields.");
+      return;
+    }
+
+    const data = (await response.json()) as { suggestion: string };
+    setAiSuggestion(data.suggestion);
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -250,7 +314,8 @@ export function VariantWizard({
             id="unitId"
             name="unitId"
             required
-            defaultValue={defaultUnitId}
+            value={unitId}
+            onChange={(event) => setUnitId(event.target.value)}
           >
             <option value="">Select unit</option>
             {units.map((unit) => (
@@ -259,6 +324,14 @@ export function VariantWizard({
               </option>
             ))}
           </select>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button type="button" variant="outline" onClick={suggestUnit}>
+              Suggest unit
+            </Button>
+            <Button type="button" variant="outline" onClick={reviewMissingFields}>
+              Review missing fields
+            </Button>
+          </div>
         </div>
         <div className="space-y-1.5">
           <label className="text-sm font-medium" htmlFor="inventoryType">

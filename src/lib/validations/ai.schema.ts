@@ -5,6 +5,7 @@ export const aiSuggestionRequestSchema = z.object({
     "PRODUCT_CREATION",
     "VARIANT_NAMING",
     "UNIT_SUGGESTION",
+    "MISSING_FIELD_SUGGESTION",
     "REORDER_INSIGHT",
   ]),
   prompt: z.string().trim().min(1).max(2000),
@@ -24,4 +25,25 @@ export const variantNameSuggestionSchema = z.object({
   material: z.string().trim().max(120).optional().or(z.literal("")),
   size: z.string().trim().max(120).optional().or(z.literal("")),
   inventoryType: z.string().trim().max(80).optional(),
+});
+
+export const unitSuggestionSchema = z.object({
+  variantName: z.string().trim().max(140).optional().or(z.literal("")),
+  material: z.string().trim().max(120).optional().or(z.literal("")),
+  size: z.string().trim().max(120).optional().or(z.literal("")),
+  inventoryType: z.string().trim().max(80).optional(),
+});
+
+export const missingFieldSuggestionSchema = z.object({
+  variantName: z.string().trim().max(140).optional().or(z.literal("")),
+  thickness: z.string().trim().max(50).optional().or(z.literal("")),
+  gsm: z.string().trim().max(20).optional().or(z.literal("")),
+  material: z.string().trim().max(120).optional().or(z.literal("")),
+  size: z.string().trim().max(120).optional().or(z.literal("")),
+  unitCode: z.string().trim().max(40).optional().or(z.literal("")),
+  inventoryType: z.string().trim().max(80).optional(),
+});
+
+export const reorderInsightSchema = z.object({
+  inventoryItemId: z.string().trim().min(1),
 });
