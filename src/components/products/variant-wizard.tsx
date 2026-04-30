@@ -17,6 +17,12 @@ type VariantWizardProps = {
 
 const steps = ["Parent Product", "Variant Name", "Attributes", "Unit", "Save"];
 
+const inventoryTypeLabels: Record<string, string> = {
+  RAW_MATERIAL: "Raw Material",
+  SEMI_FINISHED: "Semi-Finished",
+  FINISHED_GOODS: "Finished Goods",
+};
+
 export function VariantWizard({
   products,
   units,
@@ -35,9 +41,12 @@ export function VariantWizard({
   const [material, setMaterial] = useState("");
   const [size, setSize] = useState("");
   const [inventoryType, setInventoryType] = useState("FINISHED_GOODS");
+  const [hasConfirmed, setHasConfirmed] = useState(false);
   const [unitId, setUnitId] = useState(
     () => units.find((unit) => unit.code === "NOS")?.id ?? units[0]?.id ?? ""
   );
+  const selectedProduct = products.find((product) => product.id === productId);
+  const selectedUnit = units.find((unit) => unit.id === unitId);
 
   function goNext() {
     setStepIndex((current) => Math.min(current + 1, steps.length - 1));
@@ -76,6 +85,7 @@ export function VariantWizard({
 
     const data = (await response.json()) as { suggestion: string };
     setVariantName(data.suggestion);
+    setHasConfirmed(false);
     setAiSuggestion(`Suggested variant name: ${data.suggestion}`);
   }
 
@@ -109,6 +119,7 @@ export function VariantWizard({
 
     if (suggestedUnit) {
       setUnitId(suggestedUnit.id);
+      setHasConfirmed(false);
     }
 
     setAiSuggestion(data.suggestion);
@@ -148,6 +159,16 @@ export function VariantWizard({
     event.preventDefault();
     const form = event.currentTarget;
     setError(null);
+
+    if (stepIndex !== steps.length - 1) {
+      return;
+    }
+
+    if (!hasConfirmed) {
+      setError("Confirm the variant details before creating it.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     const formData = new FormData(form);
@@ -185,6 +206,7 @@ export function VariantWizard({
     setMaterial("");
     setSize("");
     setAiSuggestion(null);
+    setHasConfirmed(false);
     form.reset();
   }
 
@@ -216,7 +238,10 @@ export function VariantWizard({
             name="productId"
             required
             value={productId}
-            onChange={(event) => setProductId(event.target.value)}
+            onChange={(event) => {
+              setProductId(event.target.value);
+              setHasConfirmed(false);
+            }}
           >
             <option value="">Select parent product</option>
             {products.map((product) => (
@@ -239,7 +264,10 @@ export function VariantWizard({
             required
             placeholder="Floor Filter 50mm"
             value={variantName}
-            onChange={(event) => setVariantName(event.target.value)}
+            onChange={(event) => {
+              setVariantName(event.target.value);
+              setHasConfirmed(false);
+            }}
           />
           <div className="flex justify-end">
             <Button
@@ -264,7 +292,10 @@ export function VariantWizard({
             name="thickness"
             placeholder="50mm"
             value={thickness}
-            onChange={(event) => setThickness(event.target.value)}
+            onChange={(event) => {
+              setThickness(event.target.value);
+              setHasConfirmed(false);
+            }}
           />
         </div>
         <div className="space-y-1.5">
@@ -277,7 +308,10 @@ export function VariantWizard({
             inputMode="numeric"
             placeholder="250"
             value={gsm}
-            onChange={(event) => setGsm(event.target.value)}
+            onChange={(event) => {
+              setGsm(event.target.value);
+              setHasConfirmed(false);
+            }}
           />
         </div>
         <div className="space-y-1.5">
@@ -289,7 +323,10 @@ export function VariantWizard({
             name="material"
             placeholder="Synthetic media"
             value={material}
-            onChange={(event) => setMaterial(event.target.value)}
+            onChange={(event) => {
+              setMaterial(event.target.value);
+              setHasConfirmed(false);
+            }}
           />
         </div>
         <div className="space-y-1.5">
@@ -301,7 +338,10 @@ export function VariantWizard({
             name="size"
             placeholder="1m x 20m"
             value={size}
-            onChange={(event) => setSize(event.target.value)}
+            onChange={(event) => {
+              setSize(event.target.value);
+              setHasConfirmed(false);
+            }}
           />
         </div>
       </div>
@@ -317,7 +357,10 @@ export function VariantWizard({
             name="unitId"
             required
             value={unitId}
-            onChange={(event) => setUnitId(event.target.value)}
+            onChange={(event) => {
+              setUnitId(event.target.value);
+              setHasConfirmed(false);
+            }}
           >
             <option value="">Select unit</option>
             {units.map((unit) => (
@@ -345,7 +388,10 @@ export function VariantWizard({
             name="inventoryType"
             required
             value={inventoryType}
-            onChange={(event) => setInventoryType(event.target.value)}
+            onChange={(event) => {
+              setInventoryType(event.target.value);
+              setHasConfirmed(false);
+            }}
           >
             <option value="RAW_MATERIAL">Raw Material</option>
             <option value="SEMI_FINISHED">Semi-Finished</option>
@@ -355,7 +401,45 @@ export function VariantWizard({
       </div>
 
       <div className={stepIndex === 4 ? "space-y-4" : "hidden"}>
-        <label className="flex items-center gap-2 text-sm font-medium">
+        <div className="rounded-xl border bg-card p-4">
+          <h3 className="text-sm font-semibold text-foreground">Review variant details</h3>
+          <dl className="mt-3 grid gap-3 text-sm md:grid-cols-2">
+            <div>
+              <dt className="font-medium text-muted-foreground">Parent Product</dt>
+              <dd className="mt-1 text-foreground">
+                {selectedProduct
+                  ? `${selectedProduct.name} - ${selectedProduct.category}`
+                  : "Not selected"}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-muted-foreground">Variant Name</dt>
+              <dd className="mt-1 text-foreground">{variantName || "Not entered"}</dd>
+            </div>
+            <div>
+              <dt className="font-medium text-muted-foreground">Attributes</dt>
+              <dd className="mt-1 text-foreground">
+                {[thickness, gsm ? `${gsm} GSM` : "", material, size]
+                  .filter(Boolean)
+                  .join(", ") || "No attributes entered"}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-muted-foreground">Unit</dt>
+              <dd className="mt-1 text-foreground">
+                {selectedUnit ? `${selectedUnit.code} - ${selectedUnit.name}` : "Not selected"}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-muted-foreground">Inventory Type</dt>
+              <dd className="mt-1 text-foreground">
+                {inventoryTypeLabels[inventoryType] ?? inventoryType}
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <label className="flex items-center gap-2 text-sm font-medium text-foreground">
           <input
             className="size-4 rounded border-input"
             name="isActive"
@@ -364,7 +448,18 @@ export function VariantWizard({
           />
           Active
         </label>
-        <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+
+        <label className="flex items-start gap-2 rounded-lg border bg-background p-3 text-sm font-medium text-foreground">
+          <input
+            className="mt-0.5 size-4 rounded border-input"
+            checked={hasConfirmed}
+            type="checkbox"
+            onChange={(event) => setHasConfirmed(event.target.checked)}
+          />
+          I have checked the parent product, variant name, unit, and inventory type.
+        </label>
+
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-medium text-amber-900">
           Save only after checking parent product, unit, inventory type, and
           naming. Variants are the operational stock truth.
         </div>
@@ -387,8 +482,8 @@ export function VariantWizard({
             Next
           </Button>
         ) : (
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving" : "Save Variant"}
+          <Button type="submit" disabled={isSubmitting || !hasConfirmed}>
+            {isSubmitting ? "Creating" : "Create Variant"}
           </Button>
         )}
       </div>
