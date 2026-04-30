@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ROLE_LABELS } from "@/lib/constants/roles";
 import { type AuthenticatedUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -15,10 +16,18 @@ export function AppTopbar({ user }: AppTopbarProps) {
     <header className="sticky top-0 z-20 border-b bg-card">
       <div className="flex h-14 items-center gap-3 px-4 sm:px-6 lg:px-8">
         <div className="min-w-0 flex-1">
-          <div className="flex h-9 max-w-md items-center gap-2 rounded-lg border bg-background px-3 text-sm text-muted-foreground">
-            <Search className="size-4" aria-hidden="true" />
-            <span className="truncate">Search products, variants, stock</span>
-          </div>
+          <form className="relative max-w-md" action="/products">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <Input
+              className="bg-background pl-9"
+              name="q"
+              placeholder="Search products, variants, stock"
+              type="search"
+            />
+          </form>
         </div>
 
         <Link className={cn(buttonVariants({ size: "lg" }))} href="/factory">
