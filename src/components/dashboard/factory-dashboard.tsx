@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   ClipboardList,
   Factory,
@@ -9,7 +10,7 @@ import {
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { ActionButton } from "@/components/ui/action-button";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { DataTableShell } from "@/components/ui/data-table-shell";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
@@ -20,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 const lowStockAlerts = [
   {
@@ -106,22 +108,26 @@ export function FactoryDashboard() {
               icon={PackagePlus}
               label="Add raw material"
               description="Record store inward"
+              href="/inventory/inward"
             />
             <ActionButton
               icon={Factory}
               label="Log production"
               description="Consume input and add output"
+              href="/production/new"
             />
             <ActionButton
               icon={Truck}
               label="Dispatch goods"
               description="Move finished stock out"
+              href="/transactions"
               variant="outline"
             />
             <ActionButton
               icon={Warehouse}
               label="View stock"
               description="Check variant stock by location"
+              href="/inventory"
               variant="outline"
             />
           </div>
@@ -130,7 +136,14 @@ export function FactoryDashboard() {
         <DataTableShell
           title="Low Stock Alerts"
           description="Variant-level stock requiring action"
-          actions={<Button variant="outline">View stock</Button>}
+          actions={
+            <Link
+              className={cn(buttonVariants({ variant: "outline" }))}
+              href="/inventory"
+            >
+              View stock
+            </Link>
+          }
         >
           <Table>
             <TableHeader>

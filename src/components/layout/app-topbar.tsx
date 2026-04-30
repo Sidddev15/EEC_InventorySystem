@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { ROLE_LABELS } from "@/lib/constants/roles";
 import { type AuthenticatedUser } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 
 type AppTopbarProps = {
   user: AuthenticatedUser;
@@ -19,10 +21,10 @@ export function AppTopbar({ user }: AppTopbarProps) {
           </div>
         </div>
 
-        <Button size="lg">
+        <Link className={cn(buttonVariants({ size: "lg" }))} href="/factory">
           <Plus className="size-4" aria-hidden="true" />
           Factory Action
-        </Button>
+        </Link>
 
         <div className="hidden border-l pl-3 text-right sm:block">
           <p className="text-sm font-medium leading-5">{user.name}</p>
