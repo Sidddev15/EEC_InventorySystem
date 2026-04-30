@@ -18,6 +18,7 @@ export const ROLE_ALLOWED_PATHS: Record<UserRole, readonly string[]> = {
     "/api/production",
     "/transactions",
     "/reports",
+    "/api/reports",
     "/settings",
   ],
   FACTORY: [
@@ -28,7 +29,13 @@ export const ROLE_ALLOWED_PATHS: Record<UserRole, readonly string[]> = {
     "/api/production",
     "/transactions",
   ],
-  CORPORATE: ["/dashboard", "/inventory", "/transactions", "/reports"],
+  CORPORATE: [
+    "/dashboard",
+    "/inventory",
+    "/transactions",
+    "/reports",
+    "/api/reports",
+  ],
 };
 
 export function canAccessPath(role: UserRole, pathname: string) {
