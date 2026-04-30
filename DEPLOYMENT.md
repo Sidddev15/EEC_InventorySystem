@@ -69,6 +69,8 @@ npm run build
 
 ## Production Checklist
 
+Use `docs/PRODUCTION_QA.md` for the full pre-deployment QA checklist.
+
 - Admin login works.
 - Product creation works.
 - Variant creation works and uses correct unit/inventory type.
