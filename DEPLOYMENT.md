@@ -10,6 +10,9 @@ Set these in the deployment platform:
 DATABASE_URL=
 AUTH_SECRET=
 AUTH_URL=
+ADMIN_EMAIL=
+ADMIN_PASSWORD=
+ADMIN_NAME=
 AI_API_KEY=
 AI_MODEL=
 AI_BASE_URL=
@@ -40,6 +43,12 @@ npm run prisma:migrate:deploy
 npm run seed
 ```
 
+5. Seed the production admin user:
+
+```bash
+npm run seed:admin
+```
+
 ## Build Check
 
 Run locally before pushing:
@@ -56,7 +65,7 @@ npm run build
 - Install command: `npm install`
 - Output is handled by Next.js.
 - Do not put real secrets in `.env.example`.
-- Do not deploy without running migrations and seed data.
+- Do not deploy without running migrations, seed data, and `seed:admin`.
 
 ## Production Checklist
 

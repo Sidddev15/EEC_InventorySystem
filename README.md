@@ -74,6 +74,9 @@ See `.env.example`.
 - `DATABASE_URL`: PostgreSQL connection string.
 - `AUTH_SECRET`: long random secret for signed sessions.
 - `AUTH_URL`: deployed app URL, such as `https://inventory.example.com`.
+- `ADMIN_EMAIL`: initial admin account email for `npm run seed:admin`.
+- `ADMIN_PASSWORD`: initial admin account password for `npm run seed:admin`.
+- `ADMIN_NAME`: initial admin display name.
 - `AI_API_KEY`: optional provider API key.
 - `AI_MODEL`: optional model name.
 - `AI_BASE_URL`: optional OpenAI-compatible base URL.

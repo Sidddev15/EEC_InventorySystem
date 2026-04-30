@@ -13,7 +13,11 @@ export type SessionPayload = {
 const encoder = new TextEncoder();
 
 function getSessionSecret() {
-  return process.env.AUTH_SESSION_SECRET ?? "eec-inventory-local-session-secret";
+  return (
+    process.env.AUTH_SECRET ??
+    process.env.AUTH_SESSION_SECRET ??
+    "eec-inventory-local-session-secret"
+  );
 }
 
 function base64UrlEncodeBytes(bytes: Uint8Array) {

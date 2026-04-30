@@ -33,20 +33,24 @@ function getSuggestionFromResponse(response: GroqChatCompletionResponse) {
 }
 
 async function callAi(prompt: string) {
-  const apiKey = process.env.GROQ_API_KEY;
+  const apiKey = process.env.AI_API_KEY ?? process.env.GROQ_API_KEY;
+  const baseUrl =
+    process.env.AI_BASE_URL ?? "https://api.groq.com/openai/v1";
+  const model =
+    process.env.AI_MODEL ?? process.env.GROQ_MODEL ?? "llama-3.1-8b-instant";
 
   if (!apiKey) {
     return null;
   }
 
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: process.env.GROQ_MODEL ?? "llama-3.1-8b-instant",
+      model,
       messages: [
         {
           role: "system",
@@ -88,7 +92,7 @@ export async function requestAiSuggestion(input: AiSuggestionRequest) {
 
   return {
     suggestion,
-    source: process.env.GROQ_API_KEY ? "groq" : "fallback",
+    source: process.env.AI_API_KEY || process.env.GROQ_API_KEY ? "ai" : "fallback",
   };
 }
 
