@@ -146,10 +146,11 @@ export function VariantWizard({
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setError(null);
     setIsSubmitting(true);
 
-    const formData = new FormData(event.currentTarget);
+    const formData = new FormData(form);
     const response = await fetch("/api/variants", {
       method: "POST",
       headers: {
@@ -183,7 +184,8 @@ export function VariantWizard({
     setGsm("");
     setMaterial("");
     setSize("");
-    event.currentTarget.reset();
+    setAiSuggestion(null);
+    form.reset();
   }
 
   return (
