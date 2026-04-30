@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EEC Inventory System
 
-## Getting Started
+Production-grade industrial inventory system for an industrial filter manufacturing business.
 
-First, run the development server:
+This is not a generic SaaS dashboard. The application is built around factory stock correctness, configurable product variants, transaction-led inventory movement, and production stock conversion.
+
+## Core Rules
+
+- `ProductVariant` is the operational stock entity.
+- Stock must never be updated directly from UI code.
+- Every stock movement must create a transaction, update inventory, write stock ledger, and write audit history.
+- API routes stay thin; business logic belongs in `src/modules`.
+- Prisma access belongs in the service layer.
+- AI helpers are optional guidance only and must never block user actions.
+
+## Stack
+
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- Prisma ORM
+- PostgreSQL
+- Groq/OpenAI-compatible AI helper endpoint
+
+## Local Setup
+
+1. Install dependencies.
+
+```bash
+npm install
+```
+
+2. Create local environment file.
+
+```bash
+cp .env.example .env
+```
+
+3. Set `DATABASE_URL` in `.env`.
+
+4. Generate Prisma client and apply migrations.
+
+```bash
+npm run prisma:generate
+npm run prisma:migrate
+```
+
+5. Seed starter EEC data.
+
+```bash
+npm run seed
+```
+
+6. Start development.
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Verification
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Run these before committing or deploying:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run typecheck
+npm run build
+```
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+See `.env.example`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `DATABASE_URL`: PostgreSQL connection string.
+- `AUTH_SECRET`: long random secret for signed sessions.
+- `AUTH_URL`: deployed app URL, such as `https://inventory.example.com`.
+- `AI_API_KEY`: optional provider API key.
+- `AI_MODEL`: optional model name.
+- `AI_BASE_URL`: optional OpenAI-compatible base URL.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Main Workflows
 
-## Deploy on Vercel
+- Admin creates parent products and variants.
+- Factory users add raw material through inward transactions.
+- Factory users log production to consume raw material and create finished stock.
+- Admin users perform controlled stock adjustments with reasons.
+- Admin and corporate users audit transactions and export CSV reports.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Use `DEPLOYMENT.md` for the production checklist.
