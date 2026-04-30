@@ -20,47 +20,34 @@ type AiSuggestionRequest = {
   userId?: string;
 };
 
-type OpenAiResponse = {
-  output_text?: string;
-  output?: Array<{
-    content?: Array<{
-      type?: string;
-      text?: string;
-    }>;
+type GroqChatCompletionResponse = {
+  choices?: Array<{
+    message?: {
+      content?: string;
+    };
   }>;
 };
 
-function getSuggestionFromResponse(response: OpenAiResponse) {
-  if (response.output_text) {
-    return response.output_text.trim();
-  }
-
-  return (
-    response.output
-      ?.flatMap((item) => item.content ?? [])
-      .map((content) => content.text)
-      .filter(Boolean)
-      .join("\n")
-      .trim() ?? ""
-  );
+function getSuggestionFromResponse(response: GroqChatCompletionResponse) {
+  return response.choices?.[0]?.message?.content?.trim() ?? "";
 }
 
 async function callAi(prompt: string) {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
 
   if (!apiKey) {
     return null;
   }
 
-  const response = await fetch("https://api.openai.com/v1/responses", {
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: process.env.OPENAI_MODEL ?? "gpt-4.1-mini",
-      input: [
+      model: process.env.GROQ_MODEL ?? "llama-3.1-8b-instant",
+      messages: [
         {
           role: "system",
           content: AI_SYSTEM_PROMPT,
@@ -70,7 +57,8 @@ async function callAi(prompt: string) {
           content: prompt,
         },
       ],
-      max_output_tokens: 180,
+      max_tokens: 180,
+      temperature: 0.2,
     }),
   });
 
@@ -78,7 +66,7 @@ async function callAi(prompt: string) {
     return null;
   }
 
-  const data = (await response.json()) as OpenAiResponse;
+  const data = (await response.json()) as GroqChatCompletionResponse;
   const suggestion = getSuggestionFromResponse(data);
 
   return suggestion || null;
@@ -100,7 +88,7 @@ export async function requestAiSuggestion(input: AiSuggestionRequest) {
 
   return {
     suggestion,
-    source: process.env.OPENAI_API_KEY ? "ai" : "fallback",
+    source: process.env.GROQ_API_KEY ? "groq" : "fallback",
   };
 }
 
