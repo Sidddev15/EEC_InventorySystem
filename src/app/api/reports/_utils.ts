@@ -12,10 +12,15 @@ export async function requireReportUser() {
 }
 
 export function csvResponse(csv: string, filename: string) {
+  const dateSuffix = new Intl.DateTimeFormat("en-CA").format(new Date());
+  const finalFilename = filename.endsWith(".csv")
+    ? filename.replace(/\.csv$/, `-${dateSuffix}.csv`)
+    : `${filename}-${dateSuffix}.csv`;
+
   return new NextResponse(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": `attachment; filename="${finalFilename}"`,
     },
   });
 }
