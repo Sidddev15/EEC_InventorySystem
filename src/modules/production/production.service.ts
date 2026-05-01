@@ -16,6 +16,26 @@ function nextTransactionNo(prefix: string) {
 
 export async function createProductionEntry(input: unknown, userId?: string) {
   const data = productionEntrySchema.parse(input);
+  const duplicateConsumptionIds = data.consumptions.reduce<string[]>(
+    (duplicates, line, index, lines) => {
+      const firstIndex = lines.findIndex(
+        (candidate) => candidate.inventoryItemId === line.inventoryItemId
+      );
+
+      if (firstIndex !== index && !duplicates.includes(line.inventoryItemId)) {
+        duplicates.push(line.inventoryItemId);
+      }
+
+      return duplicates;
+    },
+    []
+  );
+
+  if (duplicateConsumptionIds.length > 0) {
+    throw new Error(
+      "Each consumed material can be added only once per production entry."
+    );
+  }
 
   return db.$transaction(async (tx) => {
     const outputItem = await tx.inventoryItem.findUnique({
@@ -145,6 +165,26 @@ export async function createProductionEntry(input: unknown, userId?: string) {
           createdByUserId: userId,
         },
       });
+
+      await tx.auditLog.create({
+        data: {
+          action: AuditAction.UPDATE,
+          entityType: "InventoryItem",
+          entityId: item.id,
+          before: {
+            quantity: quantityBefore.toString(),
+          },
+          after: {
+            quantity: quantityAfter.toString(),
+            movementType: StockMovementType.PRODUCTION_CONSUMPTION,
+            quantityChange: String(quantityChange),
+            referenceNo: data.referenceNo || productionEntry.productionNo,
+          },
+          inventoryTransactionId: transaction.id,
+          productionEntryId: productionEntry.id,
+          createdByUserId: userId,
+        },
+      });
     }
 
     const outputBefore = outputItem.quantity;
@@ -183,6 +223,26 @@ export async function createProductionEntry(input: unknown, userId?: string) {
         inventoryTransactionId: outputTransaction.id,
         productionEntryId: productionEntry.id,
         notes: data.notes || null,
+        createdByUserId: userId,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        action: AuditAction.UPDATE,
+        entityType: "InventoryItem",
+        entityId: outputItem.id,
+        before: {
+          quantity: outputBefore.toString(),
+        },
+        after: {
+          quantity: outputAfter.toString(),
+          movementType: StockMovementType.PRODUCTION_OUTPUT,
+          quantityChange: String(data.outputQuantity),
+          referenceNo: data.referenceNo || productionEntry.productionNo,
+        },
+        inventoryTransactionId: outputTransaction.id,
+        productionEntryId: productionEntry.id,
         createdByUserId: userId,
       },
     });
