@@ -1,5 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, InventoryType } from "../src/generated/prisma/client";
+import { PrismaClient, InventoryType, UnitType } from "../src/generated/prisma/client";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -19,12 +19,12 @@ const categories = [
 ];
 
 const units = [
-  { code: "NOS", name: "Numbers", description: "Piece-count stock unit" },
-  { code: "Roll", name: "Roll", description: "Filter media rolls" },
-  { code: "Sq Ft", name: "Square Feet", description: "Area measured in square feet" },
-  { code: "Sq Meter", name: "Square Meter", description: "Area measured in square meters" },
-  { code: "Kg", name: "Kilogram", description: "Weight-based raw material stock" },
-  { code: "Meter", name: "Meter", description: "Linear media and gasket measurement" },
+  { code: "NOS", name: "Numbers", unitType: UnitType.COUNT, conversionFactor: "1", description: "Piece-count stock unit" },
+  { code: "Roll", name: "Roll", unitType: UnitType.ROLL, conversionFactor: "1", description: "Filter media rolls" },
+  { code: "Sq Ft", name: "Square Feet", unitType: UnitType.AREA, conversionFactor: "0.092903", description: "Area measured in square feet" },
+  { code: "Sq Meter", name: "Square Meter", unitType: UnitType.AREA, conversionFactor: "1", description: "Area measured in square meters" },
+  { code: "Kg", name: "Kilogram", unitType: UnitType.WEIGHT, conversionFactor: "1", description: "Weight-based raw material stock" },
+  { code: "Meter", name: "Meter", unitType: UnitType.LENGTH, conversionFactor: "1", description: "Linear media and gasket measurement" },
 ];
 
 const locations = [
@@ -151,6 +151,8 @@ async function main() {
       where: { code: unitSeed.code },
       update: {
         name: unitSeed.name,
+        unitType: unitSeed.unitType,
+        conversionFactor: unitSeed.conversionFactor,
         description: unitSeed.description,
         isActive: true,
       },

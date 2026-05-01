@@ -20,6 +20,8 @@ export type SettingsUnitItem = {
   id: string;
   code: string;
   name: string;
+  unitType: "COUNT" | "ROLL" | "AREA" | "WEIGHT" | "LENGTH";
+  conversionFactor: string | null;
   description: string | null;
   isActive: boolean;
   variantsCount: number;
@@ -33,6 +35,8 @@ export type SettingsLocationItem = {
   isStockHolding: boolean;
   inventoryItemsCount: number;
 };
+
+export type SettingsLocationType = "STOCK_HOLDING" | "REPORTING_ONLY";
 
 export type SettingsHubSection = {
   title: string;

@@ -28,6 +28,8 @@ model Unit {
   id          String           @id @default(cuid())
   code        String           @unique
   name        String
+  unitType    UnitType         @default(COUNT)
+  conversionFactor Decimal?    @db.Decimal(14, 3)
   description String?
   isActive    Boolean          @default(true)
   createdAt   DateTime         @default(now())
@@ -275,6 +277,14 @@ enum InventoryType {
   RAW_MATERIAL
   SEMI_FINISHED
   FINISHED_GOODS
+}
+
+enum UnitType {
+  COUNT
+  ROLL
+  AREA
+  WEIGHT
+  LENGTH
 }
 
 enum TransactionType {

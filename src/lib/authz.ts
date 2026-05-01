@@ -23,6 +23,7 @@ export const ROLE_ALLOWED_PATHS: Record<UserRole, readonly string[]> = {
     "/reports",
     "/api/reports",
     "/settings",
+    "/api/settings",
   ],
   FACTORY: [
     "/dashboard",

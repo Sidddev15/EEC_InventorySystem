@@ -1,0 +1,5 @@
+CREATE TYPE "UnitType" AS ENUM ('COUNT', 'ROLL', 'AREA', 'WEIGHT', 'LENGTH');
+
+ALTER TABLE "Unit"
+ADD COLUMN "unitType" "UnitType" NOT NULL DEFAULT 'COUNT',
+ADD COLUMN "conversionFactor" DECIMAL(14,3);
