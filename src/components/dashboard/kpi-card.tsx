@@ -28,20 +28,20 @@ export function KpiCard({
   const TrendIcon = trend?.direction === "down" ? ArrowDownRight : ArrowUpRight;
 
   return (
-    <Card className={cn("min-h-36", className)}>
+    <Card className={cn("min-h-32 md:min-h-36", className)}>
       <CardHeader className="flex-row items-start justify-between gap-3">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
         {icon ? (
-          <div className="flex size-8 items-center justify-center rounded-lg border bg-background text-muted-foreground">
+          <div className="flex size-8 items-center justify-center rounded-lg border bg-background text-muted-foreground md:size-9">
             {icon}
           </div>
         ) : null}
       </CardHeader>
       <CardContent>
         <div className="flex items-end gap-2">
-          <div className="text-3xl font-bold tracking-normal text-foreground">
+          <div className="text-xl font-bold tracking-normal text-foreground md:text-2xl">
             {value}
           </div>
           {unit ? (
