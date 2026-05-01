@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  ClipboardList,
   Factory,
   PackageCheck,
   PackagePlus,
@@ -76,28 +75,32 @@ export function FactoryDashboard() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           title="Today’s Production"
-          value="186 units"
+          value="186"
+          unit="Sq M"
           subtitle="Across 5 filter lines"
           icon={<Factory className="size-4" aria-hidden="true" />}
         />
         <KpiCard
-          title="Raw Material Alerts"
-          value="3 items"
-          subtitle="Needs store attention"
-          trend={{ label: "2 urgent", direction: "down" }}
+          title="Raw Material"
+          value="428"
+          unit="Units"
+          subtitle="Available across active stores"
           icon={<Warehouse className="size-4" aria-hidden="true" />}
         />
         <KpiCard
           title="Finished Goods Stock"
-          value="1,248 units"
+          value="1,248"
+          unit="Units"
           subtitle="Ready or packed"
           icon={<PackageCheck className="size-4" aria-hidden="true" />}
         />
         <KpiCard
-          title="Today’s Consumption"
-          value="312.5 kg"
-          subtitle="Raw material issued"
-          icon={<ClipboardList className="size-4" aria-hidden="true" />}
+          title="Low Stock Count"
+          value="3"
+          unit="Items"
+          subtitle="Needs immediate review"
+          trend={{ label: "2 urgent", direction: "down" }}
+          icon={<PackagePlus className="size-4" aria-hidden="true" />}
         />
       </section>
 

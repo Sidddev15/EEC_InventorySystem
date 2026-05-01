@@ -93,27 +93,31 @@ export function CorporateDashboard() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           title="Total Raw Material"
-          value="4,860 units"
+          value="4,860"
+          unit="Units"
           subtitle="Across active stores"
           icon={<Boxes className="size-4" aria-hidden="true" />}
         />
         <KpiCard
           title="Total Finished Goods"
-          value="2,418 units"
+          value="2,418"
+          unit="Units"
           subtitle="Ready and packed stock"
           icon={<PackageCheck className="size-4" aria-hidden="true" />}
         />
         <KpiCard
           title="Monthly Production"
-          value="3,920 units"
+          value="3,920"
+          unit="Units"
           subtitle="Current month"
           trend={{ label: "8% higher", direction: "up" }}
           icon={<Factory className="size-4" aria-hidden="true" />}
         />
         <KpiCard
-          title="Monthly Consumption"
-          value="1,840 kg"
-          subtitle="Raw material issued"
+          title="Low Stock Count"
+          value="2"
+          unit="Items"
+          subtitle="Corporate action items"
           icon={<Scale className="size-4" aria-hidden="true" />}
         />
       </section>

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 type KpiCardProps = {
   title: string;
   value: string;
+  unit?: string;
   subtitle?: string;
   trend?: {
     label: string;
@@ -18,6 +19,7 @@ type KpiCardProps = {
 export function KpiCard({
   title,
   value,
+  unit,
   subtitle,
   trend,
   icon,
@@ -26,7 +28,7 @@ export function KpiCard({
   const TrendIcon = trend?.direction === "down" ? ArrowDownRight : ArrowUpRight;
 
   return (
-    <Card className={cn("min-h-32", className)}>
+    <Card className={cn("min-h-36", className)}>
       <CardHeader className="flex-row items-start justify-between gap-3">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
@@ -38,8 +40,15 @@ export function KpiCard({
         ) : null}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-semibold tracking-normal text-foreground">
-          {value}
+        <div className="flex items-end gap-2">
+          <div className="text-3xl font-bold tracking-normal text-foreground">
+            {value}
+          </div>
+          {unit ? (
+            <span className="pb-1 text-xs font-medium uppercase text-muted-foreground">
+              {unit}
+            </span>
+          ) : null}
         </div>
         <div className="mt-2 flex min-h-5 items-center gap-2 text-xs text-muted-foreground">
           {subtitle ? <span>{subtitle}</span> : null}
