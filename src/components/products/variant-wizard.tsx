@@ -283,7 +283,7 @@ export function VariantWizard({
       </div>
 
       <div className={stepIndex === 2 ? "grid gap-4 md:grid-cols-2" : "hidden"}>
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 rounded-xl border bg-background p-4">
           <label className="text-sm font-medium" htmlFor="thickness">
             Thickness
           </label>
@@ -297,8 +297,11 @@ export function VariantWizard({
               setHasConfirmed(false);
             }}
           />
+          <p className="text-xs leading-5 text-muted-foreground">
+            Use the operational thickness used on the shop floor and in dispatch communication.
+          </p>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 rounded-xl border bg-background p-4">
           <label className="text-sm font-medium" htmlFor="gsm">
             GSM
           </label>
@@ -313,8 +316,11 @@ export function VariantWizard({
               setHasConfirmed(false);
             }}
           />
+          <p className="text-xs leading-5 text-muted-foreground">
+            Keep GSM numeric so variants stay comparable and searchable later.
+          </p>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 rounded-xl border bg-background p-4">
           <label className="text-sm font-medium" htmlFor="material">
             Material
           </label>
@@ -328,8 +334,11 @@ export function VariantWizard({
               setHasConfirmed(false);
             }}
           />
+          <p className="text-xs leading-5 text-muted-foreground">
+            Enter the actual filter media or assembly material used in stock handling.
+          </p>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 rounded-xl border bg-background p-4">
           <label className="text-sm font-medium" htmlFor="size">
             Size
           </label>
@@ -343,6 +352,15 @@ export function VariantWizard({
               setHasConfirmed(false);
             }}
           />
+          <p className="text-xs leading-5 text-muted-foreground">
+            Use a stable dimensional format. This affects naming quality and unit suggestions.
+          </p>
+        </div>
+        <div className="rounded-xl border bg-card p-4 md:col-span-2">
+          <p className="text-sm font-semibold text-foreground">Attribute preview</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {[thickness || "Thickness not set", gsm ? `${gsm} GSM` : "GSM not set", material || "Material not set", size || "Size not set"].join(" • ")}
+          </p>
         </div>
       </div>
 
@@ -466,7 +484,7 @@ export function VariantWizard({
       </div>
 
       {aiSuggestion ? (
-        <p className="rounded-lg border bg-muted/40 p-3 text-sm font-medium text-foreground">
+        <p className="rounded-xl border bg-background p-3 text-sm font-medium text-foreground">
           {aiSuggestion}
         </p>
       ) : null}
