@@ -47,18 +47,21 @@ const rawMaterialAlerts = [
     location: "Factory Store",
     available: "4 Roll",
     priority: "low",
+    label: "Urgent",
   },
   {
     item: "Glass Fiber Media",
     location: "Factory Store",
     available: "126 Sq Meter",
     priority: "reorder",
+    label: "Reorder soon",
   },
   {
     item: "Pocket Filter F7 Bag",
     location: "Production Floor",
     available: "12 NOS",
     priority: "reorder",
+    label: "Reorder soon",
   },
 ] as const;
 
@@ -164,7 +167,7 @@ export function FactoryDashboard() {
           <CardContent className="space-y-3 pt-5">
             {rawMaterialAlerts.map((alert) => (
               <div
-                className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3 last:border-0 last:pb-0"
+                className="flex items-center justify-between gap-4 rounded-lg border border-slate-100 px-3 py-3 last:pb-3"
                 key={`${alert.item}-${alert.location}`}
               >
                 <div className="flex min-w-0 items-start gap-3">
@@ -179,11 +182,20 @@ export function FactoryDashboard() {
                       {alert.item}
                     </p>
                     <p className="mt-1 text-sm text-slate-500">{alert.location}</p>
+                    <p
+                      className={cn(
+                        "mt-1 text-xs font-medium",
+                        alert.priority === "low" ? "text-red-700" : "text-amber-700"
+                      )}
+                    >
+                      {alert.label}
+                    </p>
                   </div>
                 </div>
-                <p className="shrink-0 text-sm font-semibold text-slate-900">
-                  {alert.available}
-                </p>
+                <div className="shrink-0 text-right">
+                  <p className="text-base font-bold text-slate-900">{alert.available}</p>
+                  <p className="text-xs text-slate-500">Available</p>
+                </div>
               </div>
             ))}
           </CardContent>
