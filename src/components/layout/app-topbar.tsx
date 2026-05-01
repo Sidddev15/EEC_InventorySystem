@@ -31,6 +31,17 @@ export function AppTopbar({ user }: AppTopbarProps) {
         </div>
 
         <Link
+          className={cn(
+            buttonVariants({ variant: "outline", size: "icon-sm" }),
+            "sm:hidden"
+          )}
+          href="/products"
+        >
+          <Search className="size-4" aria-hidden="true" />
+          <span className="sr-only">Search products</span>
+        </Link>
+
+        <Link
           className={cn(buttonVariants({ size: "lg" }), "ml-auto sm:ml-0")}
           href="/factory"
         >

@@ -39,7 +39,7 @@ export function ActionButton({
       <Link
         className={cn(
           buttonVariants({ variant }),
-          "h-24 flex-col justify-center gap-2 px-4 py-4 text-center",
+          "h-24 flex-col justify-center gap-2 px-4 py-4 text-center whitespace-normal",
           className
         )}
         href={href}
@@ -52,7 +52,7 @@ export function ActionButton({
   return (
     <Button
       className={cn(
-        "h-24 flex-col justify-center gap-2 px-4 py-4 text-center",
+        "h-24 flex-col justify-center gap-2 px-4 py-4 text-center whitespace-normal",
         className
       )}
       variant={variant}

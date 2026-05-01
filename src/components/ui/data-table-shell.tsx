@@ -19,7 +19,7 @@ export function DataTableShell({
 }: DataTableShellProps) {
   return (
     <Card className={cn("overflow-hidden", className)}>
-      <CardHeader className="border-b bg-card">
+      <CardHeader className="border-b bg-card pb-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <CardTitle className="text-base">{title}</CardTitle>
