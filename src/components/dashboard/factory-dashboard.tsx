@@ -227,10 +227,18 @@ export function FactoryDashboard() {
 
       <Card>
         <CardHeader className="border-b pb-4">
-          <CardTitle>Today&apos;s Production</CardTitle>
-          <p className="mt-1 text-sm text-slate-600">
-            Compact view of finished output posted during the current shift.
-          </p>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <CardTitle>Today&apos;s Production</CardTitle>
+              <p className="mt-1 text-sm text-slate-600">
+                Compact view of finished output posted during the current shift.
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-slate-900">88</p>
+              <p className="text-xs font-medium text-slate-500">Total output units</p>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
@@ -246,10 +254,13 @@ export function FactoryDashboard() {
               {todaysProduction.map((row) => (
                 <TableRow key={`${row.time}-${row.variant}`}>
                   <TableCell>{row.time}</TableCell>
-                  <TableCell className="font-medium text-slate-900">
-                    {row.variant}
+                  <TableCell>
+                    <div>
+                      <p className="font-medium text-slate-900">{row.variant}</p>
+                      <p className="text-xs text-slate-500">{row.line}</p>
+                    </div>
                   </TableCell>
-                  <TableCell>{row.line}</TableCell>
+                  <TableCell className="text-slate-600">{row.line}</TableCell>
                   <TableCell className="text-right font-semibold tabular-nums text-slate-900">
                     {row.quantity}
                   </TableCell>
