@@ -78,6 +78,8 @@ export async function listInventoryItemOptions(args?: {
     id: item.id,
     variantId: item.variant.id,
     label: `${item.variant.product.name} - ${item.variant.name}`,
+    itemName: item.variant.product.name,
+    variantName: item.variant.name,
     unit: item.variant.unit.code,
     inventoryType: item.variant.inventoryType,
     location: item.location.name,

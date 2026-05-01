@@ -15,6 +15,9 @@ export function AdjustmentForm({ items }: AdjustmentFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState("");
+  const [adjustmentType, setAdjustmentType] = useState("INCREASE");
+  const selectedItem = items.find((item) => item.id === selectedItemId);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -50,65 +53,124 @@ export function AdjustmentForm({ items }: AdjustmentFormProps) {
 
   return (
     <form className="space-y-5" onSubmit={onSubmit}>
-      <div className="space-y-1.5">
-        <label className="text-sm font-medium" htmlFor="inventoryItemId">
-          Item
-        </label>
-        <select
-          className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-          id="inventoryItemId"
-          name="inventoryItemId"
-          required
-        >
-          <option value="">Select item</option>
-          {items.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.label} / {item.location} / {item.unit}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="space-y-4 rounded-xl border bg-background p-4">
         <div className="space-y-1.5">
-          <label className="text-sm font-medium" htmlFor="adjustmentType">
-            Adjustment Type
+          <label className="text-sm font-medium" htmlFor="inventoryItemId">
+            Item
           </label>
           <select
             className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-            id="adjustmentType"
-            name="adjustmentType"
+            id="inventoryItemId"
+            name="inventoryItemId"
             required
+            value={selectedItemId}
+            onChange={(event) => setSelectedItemId(event.target.value)}
           >
-            <option value="INCREASE">Increase</option>
-            <option value="DECREASE">Decrease</option>
+            <option value="">Select item</option>
+            {items.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label} / {item.location} / {item.unit}
+              </option>
+            ))}
           </select>
         </div>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium" htmlFor="quantity">
-            Quantity
-          </label>
-          <Input id="quantity" name="quantity" inputMode="decimal" required />
-        </div>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium" htmlFor="referenceNo">
-            Reference Number
-          </label>
-          <Input id="referenceNo" name="referenceNo" placeholder="Optional" />
+
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-lg border bg-card p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Variant
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {selectedItem?.variantName ?? "Select an item"}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {selectedItem?.itemName ?? "Parent product will appear here"}
+            </p>
+          </div>
+          <div className="rounded-lg border bg-card p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Current Stock
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {selectedItem ? `${selectedItem.currentStock} ${selectedItem.unit}` : "0"}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Stock before correction
+            </p>
+          </div>
+          <div className="rounded-lg border bg-card p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Location
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {selectedItem?.location ?? "Not selected"}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Audit trail is location-aware
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-sm font-medium" htmlFor="reason">
-          Reason
-        </label>
-        <textarea
-          className="min-h-24 w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-          id="reason"
-          name="reason"
-          required
-          placeholder="Explain the correction clearly. This is written to audit logs."
-        />
+      <div className="space-y-4 rounded-xl border bg-background p-4">
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="adjustmentType">
+              Adjustment Type
+            </label>
+            <select
+              className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+              id="adjustmentType"
+              name="adjustmentType"
+              required
+              value={adjustmentType}
+              onChange={(event) => setAdjustmentType(event.target.value)}
+            >
+              <option value="INCREASE">Increase</option>
+              <option value="DECREASE">Decrease</option>
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="quantity">
+              Quantity
+            </label>
+            <Input id="quantity" name="quantity" inputMode="decimal" required />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="referenceNo">
+              Reference Number
+            </label>
+            <Input id="referenceNo" name="referenceNo" placeholder="Optional" />
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          {adjustmentType === "DECREASE"
+            ? "Decrease only when physical stock is lower than system stock. Negative stock is blocked server-side."
+            : "Increase only when stock exists physically but was missed in a prior inward or production entry."}
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium" htmlFor="reason">
+            Reason
+          </label>
+          <textarea
+            className="min-h-24 w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+            id="reason"
+            name="reason"
+            required
+            placeholder="Explain the correction clearly. This is written to audit logs."
+          />
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <p className="text-sm font-semibold text-slate-900">Submission flow</p>
+        <p className="mt-2 text-sm leading-6 text-slate-700">
+          Each adjustment creates an adjustment transaction, updates the stock
+          balance, writes a stock ledger record, and stores an audit entry with
+          the reason and reference number.
+        </p>
       </div>
 
       {items.length === 0 ? (

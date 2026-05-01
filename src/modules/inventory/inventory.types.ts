@@ -21,6 +21,8 @@ export type InventoryItemOption = {
   id: string;
   variantId: string;
   label: string;
+  itemName: string;
+  variantName: string;
   unit: string;
   inventoryType: string;
   location: string;
