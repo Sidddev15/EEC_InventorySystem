@@ -26,3 +26,19 @@ export type InventoryItemOption = {
   location: string;
   currentStock: number;
 };
+
+export type InventoryTypeSummary = {
+  type: InventoryTab;
+  label: string;
+  itemCount: number;
+  variantCount: number;
+  locationCount: number;
+};
+
+export type InventoryOverview = {
+  totalItems: number;
+  totalVariants: number;
+  totalLocations: number;
+  activeSummary: InventoryTypeSummary;
+  summaries: InventoryTypeSummary[];
+};

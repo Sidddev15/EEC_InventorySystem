@@ -2,12 +2,19 @@ import { InventoryType, Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import {
   type InventoryItemOption,
+  type InventoryOverview,
   type InventoryListItem,
   type InventoryStockStatus,
   type InventoryTab,
+  type InventoryTypeSummary,
 } from "./inventory.types";
 
 const inventoryTypeValues = Object.values(InventoryType);
+const inventoryTypeLabels: Record<InventoryType, string> = {
+  [InventoryType.RAW_MATERIAL]: "Raw Material",
+  [InventoryType.SEMI_FINISHED]: "Semi-Finished",
+  [InventoryType.FINISHED_GOODS]: "Finished Goods",
+};
 
 export function normalizeInventoryTab(value?: string): InventoryTab {
   if (value && inventoryTypeValues.includes(value as InventoryType)) {
@@ -176,4 +183,92 @@ export async function listInventoryByType(
       reorderLevel: item.variant.reorderLevel,
     }),
   }));
+}
+
+export async function getInventoryOverview(
+  activeType: InventoryTab
+): Promise<InventoryOverview> {
+  const groupedItems = await db.inventoryItem.findMany({
+    where: {
+      location: {
+        isStockHolding: true,
+      },
+    },
+    select: {
+      locationId: true,
+      variantId: true,
+      variant: {
+        select: {
+          inventoryType: true,
+        },
+      },
+    },
+  });
+
+  const summaryMap = new Map<InventoryType, InventoryTypeSummary>();
+
+  for (const type of inventoryTypeValues) {
+    summaryMap.set(type, {
+      type,
+      label: inventoryTypeLabels[type],
+      itemCount: 0,
+      variantCount: 0,
+      locationCount: 0,
+    });
+  }
+
+  const variantSets = new Map<InventoryType, Set<string>>();
+  const locationSets = new Map<InventoryType, Set<string>>();
+
+  for (const type of inventoryTypeValues) {
+    variantSets.set(type, new Set<string>());
+    locationSets.set(type, new Set<string>());
+  }
+
+  for (const item of groupedItems) {
+    const type = item.variant.inventoryType;
+    const summary = summaryMap.get(type);
+
+    if (!summary) {
+      continue;
+    }
+
+    summary.itemCount += 1;
+    variantSets.get(type)?.add(item.variantId);
+    locationSets.get(type)?.add(item.locationId);
+  }
+
+  const summaries = inventoryTypeValues.map((type) => {
+    const summary = summaryMap.get(type);
+
+    if (!summary) {
+      return {
+        type,
+        label: inventoryTypeLabels[type],
+        itemCount: 0,
+        variantCount: 0,
+        locationCount: 0,
+      };
+    }
+
+    return {
+      ...summary,
+      variantCount: variantSets.get(type)?.size ?? 0,
+      locationCount: locationSets.get(type)?.size ?? 0,
+    };
+  });
+
+  const activeSummary =
+    summaries.find((summary) => summary.type === activeType) ?? summaries[0];
+
+  return {
+    totalItems: summaries.reduce((total, summary) => total + summary.itemCount, 0),
+    totalVariants: summaries.reduce(
+      (total, summary) => total + summary.variantCount,
+      0
+    ),
+    totalLocations: new Set(groupedItems.map((item) => item.locationId)).size,
+    activeSummary,
+    summaries,
+  };
 }

@@ -43,20 +43,30 @@ export function InventoryTable({ items }: InventoryTableProps) {
           {items.length > 0 ? (
             items.map((item) => (
               <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.itemName}</TableCell>
-                <TableCell>{item.category}</TableCell>
-                <TableCell>{item.variant}</TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <p className="font-medium text-foreground">{item.itemName}</p>
+                    <p className="text-xs text-muted-foreground">{item.category}</p>
+                  </div>
+                </TableCell>
+                <TableCell className="text-muted-foreground">{item.category}</TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <p className="font-medium text-foreground">{item.variant}</p>
+                    <p className="text-xs text-muted-foreground">{item.location}</p>
+                  </div>
+                </TableCell>
                 <TableCell className="font-semibold tabular-nums">
                   {item.currentStock}
                 </TableCell>
                 <TableCell>{item.unit}</TableCell>
-                <TableCell>{item.location}</TableCell>
+                <TableCell className="text-muted-foreground">{item.location}</TableCell>
                 <TableCell>{item.reorderLevel}</TableCell>
                 <TableCell>
                   <StatusBadge status={item.status} />
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex flex-wrap justify-end gap-2">
                     <ReorderInsightButton inventoryItemId={item.id} />
                     <Link
                       className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
