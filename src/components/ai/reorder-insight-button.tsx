@@ -41,6 +41,7 @@ export function ReorderInsightButton({
   return (
     <div className="space-y-2">
       <Button
+        className="w-full sm:w-auto"
         size="sm"
         type="button"
         variant="outline"
@@ -50,7 +51,7 @@ export function ReorderInsightButton({
         {isLoading ? "Checking" : "AI insight"}
       </Button>
       {insight ? (
-        <div className="max-w-xs">
+        <div className="max-w-full sm:max-w-xs">
           <InlineAiSuggestion title="Reorder insight" message={insight} />
         </div>
       ) : null}
