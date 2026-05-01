@@ -148,28 +148,57 @@ export function FactoryDashboard() {
             </Link>
           }
         >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Variant</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Available</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {lowStockAlerts.map((alert) => (
-                <TableRow key={`${alert.item}-${alert.location}`}>
-                  <TableCell className="font-medium">{alert.item}</TableCell>
-                  <TableCell>{alert.location}</TableCell>
-                  <TableCell>{alert.available}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={alert.status} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="grid gap-4 p-4 lg:grid-cols-2">
+            <div className="rounded-xl border border-red-200 bg-red-50/60 p-4">
+              <p className="text-sm font-semibold text-red-800">Low stock</p>
+              <div className="mt-3 space-y-3">
+                {lowStockAlerts
+                  .filter((alert) => alert.status === "low")
+                  .map((alert) => (
+                    <div
+                      className="rounded-lg border border-red-200 bg-card p-3"
+                      key={`${alert.item}-${alert.location}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{alert.item}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {alert.location}
+                          </p>
+                        </div>
+                        <StatusBadge status="low" />
+                      </div>
+                      <p className="mt-2 text-sm text-red-800">{alert.available} available</p>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4">
+              <p className="text-sm font-semibold text-amber-800">Reorder soon</p>
+              <div className="mt-3 space-y-3">
+                {lowStockAlerts
+                  .filter((alert) => alert.status === "reorder")
+                  .map((alert) => (
+                    <div
+                      className="rounded-lg border border-amber-200 bg-card p-3"
+                      key={`${alert.item}-${alert.location}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{alert.item}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {alert.location}
+                          </p>
+                        </div>
+                        <StatusBadge status="reorder" />
+                      </div>
+                      <p className="mt-2 text-sm text-amber-800">{alert.available} available</p>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
         </DataTableShell>
       </section>
 
@@ -181,6 +210,7 @@ export function FactoryDashboard() {
               <TableHead>Activity</TableHead>
               <TableHead>Variant</TableHead>
               <TableHead>Quantity</TableHead>
+              <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -190,6 +220,15 @@ export function FactoryDashboard() {
                 <TableCell>{transaction.activity}</TableCell>
                 <TableCell className="font-medium">{transaction.item}</TableCell>
                 <TableCell>{transaction.quantity}</TableCell>
+                <TableCell>
+                  <StatusBadge
+                    status={
+                      transaction.quantity.startsWith("-") ? "reorder" : "normal"
+                    }
+                  >
+                    {transaction.quantity.startsWith("-") ? "Issued" : "Posted"}
+                  </StatusBadge>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
