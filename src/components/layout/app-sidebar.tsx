@@ -71,26 +71,10 @@ const sidebarItems: Array<{
   },
 ];
 
+const mobileNavItems = ["/dashboard", "/products", "/inventory", "/production", "/transactions"];
+
 type AppSidebarProps = {
   role: UserRole;
-};
-
-const roleSwitchOptions: Record<
-  UserRole,
-  Array<{ label: string; href: string; disabled?: boolean }>
-> = {
-  ADMIN: [
-    { label: "Factory", href: "/factory" },
-    { label: "Corporate", href: "/dashboard" },
-  ],
-  FACTORY: [
-    { label: "Factory", href: "/factory" },
-    { label: "Corporate", href: "/dashboard", disabled: true },
-  ],
-  CORPORATE: [
-    { label: "Factory", href: "/factory", disabled: true },
-    { label: "Corporate", href: "/dashboard" },
-  ],
 };
 
 export function AppSidebar({ role }: AppSidebarProps) {
@@ -104,7 +88,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
 
   return (
     <>
-      <aside className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex lg:flex-col">
+      <aside className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex md:flex-col">
         <div className="border-b border-sidebar-border px-5 py-6">
           <p className="text-base font-semibold tracking-normal text-white">
             EEC Inventory System
@@ -112,40 +96,6 @@ export function AppSidebar({ role }: AppSidebarProps) {
           <p className="mt-1 text-xs text-slate-300">
             Industrial filter stock control
           </p>
-          <div className="mt-4 rounded-xl border border-slate-700 bg-slate-950/50 p-1">
-            <div className="grid grid-cols-2 gap-1">
-              {roleSwitchOptions[role].map((option) => {
-                const isActive =
-                  option.label === "Factory"
-                    ? pathname === "/factory"
-                    : pathname === "/dashboard";
-
-                if (option.disabled) {
-                  return (
-                    <span
-                      className="flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium text-slate-500"
-                      key={option.label}
-                    >
-                      {option.label}
-                    </span>
-                  );
-                }
-
-                return (
-                  <Link
-                    className={cn(
-                      "flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white",
-                      isActive && "bg-primary text-white hover:bg-primary"
-                    )}
-                    href={option.href}
-                    key={option.label}
-                  >
-                    {option.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
         </div>
 
         <nav className="flex-1 space-y-2 px-3 py-5">
@@ -172,9 +122,11 @@ export function AppSidebar({ role }: AppSidebarProps) {
         </nav>
       </aside>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-sidebar-border bg-sidebar px-2 py-2 text-sidebar-foreground shadow-sm lg:hidden">
-        <div className="flex gap-1 overflow-x-auto pb-1">
-          {visibleItems.map((item) => {
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white px-2 py-2 text-slate-700 shadow-sm md:hidden">
+        <div className="flex items-center justify-around gap-1">
+          {visibleItems
+            .filter((item) => mobileNavItems.includes(item.href))
+            .map((item) => {
             const Icon = item.icon;
             const isActive = item.exact
               ? pathname === item.href
@@ -185,8 +137,8 @@ export function AppSidebar({ role }: AppSidebarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex min-h-14 min-w-20 flex-col items-center justify-center gap-1 rounded-lg border border-transparent px-2 text-[11px] font-medium text-slate-300",
-                  isActive && "border-sidebar-border bg-sidebar-accent text-white"
+                  "flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-2 text-[11px] font-medium text-slate-500",
+                  isActive && "bg-blue-50 text-blue-700"
                 )}
               >
                 <Icon className="size-5" aria-hidden="true" />
