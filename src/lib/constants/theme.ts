@@ -1,19 +1,21 @@
+import { designTokens } from "@/lib/design-tokens";
+
 export const EEC_THEME = {
-  background: "#F6F7F9",
-  surface: "#FFFFFF",
-  sidebar: "#17202A",
-  sidebarActive: "#243447",
-  border: "#E2E8F0",
-  textPrimary: "#111827",
-  textSecondary: "#6B7280",
-  accent: "#2563EB",
-  success: "#16A34A",
-  warning: "#D97706",
-  danger: "#DC2626",
+  background: designTokens.colors.background,
+  surface: designTokens.colors.surface,
+  sidebar: designTokens.colors.sidebar,
+  sidebarActive: designTokens.colors.sidebarActive,
+  border: designTokens.colors.border,
+  textPrimary: designTokens.colors.textPrimary,
+  textSecondary: designTokens.colors.textSecondary,
+  accent: designTokens.colors.primary,
+  success: designTokens.colors.success,
+  warning: designTokens.colors.warning,
+  danger: designTokens.colors.danger,
   stockStatus: {
-    low: "#DC2626",
-    reorderSoon: "#CA8A04",
-    normal: "#16A34A",
+    low: designTokens.colors.danger,
+    reorderSoon: designTokens.colors.warning,
+    normal: designTokens.colors.success,
   },
 } as const;
 
