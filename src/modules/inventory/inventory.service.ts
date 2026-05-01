@@ -4,6 +4,7 @@ import {
   type InventoryItemOption,
   type InventoryOverview,
   type InventoryListItem,
+  type InventoryStatusBreakdown,
   type InventoryStockStatus,
   type InventoryTab,
   type InventoryTypeSummary,
@@ -271,4 +272,20 @@ export async function getInventoryOverview(
     activeSummary,
     summaries,
   };
+}
+
+export function summarizeInventoryStatuses(
+  items: InventoryListItem[]
+): InventoryStatusBreakdown {
+  return items.reduce<InventoryStatusBreakdown>(
+    (totals, item) => {
+      totals[item.status] += 1;
+      return totals;
+    },
+    {
+      low: 0,
+      reorder: 0,
+      normal: 0,
+    }
+  );
 }

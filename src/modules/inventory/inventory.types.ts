@@ -42,3 +42,9 @@ export type InventoryOverview = {
   activeSummary: InventoryTypeSummary;
   summaries: InventoryTypeSummary[];
 };
+
+export type InventoryStatusBreakdown = {
+  low: number;
+  reorder: number;
+  normal: number;
+};

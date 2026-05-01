@@ -57,11 +57,35 @@ export function InventoryTable({ items }: InventoryTableProps) {
                   </div>
                 </TableCell>
                 <TableCell className="font-semibold tabular-nums">
-                  {item.currentStock}
+                  <div className="space-y-1">
+                    <p className="font-semibold tabular-nums text-foreground">
+                      {item.currentStock}
+                    </p>
+                    {item.status === "low" ? (
+                      <p className="text-xs font-medium text-red-700">
+                        Below minimum stock
+                      </p>
+                    ) : item.status === "reorder" ? (
+                      <p className="text-xs font-medium text-amber-700">
+                        At reorder threshold
+                      </p>
+                    ) : (
+                      <p className="text-xs text-emerald-700">Within stock target</p>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>{item.unit}</TableCell>
                 <TableCell className="text-muted-foreground">{item.location}</TableCell>
-                <TableCell>{item.reorderLevel}</TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <p className="text-foreground">{item.reorderLevel}</p>
+                    {item.reorderLevel === "Not set" ? (
+                      <p className="text-xs font-medium text-amber-700">
+                        Set a reorder level
+                      </p>
+                    ) : null}
+                  </div>
+                </TableCell>
                 <TableCell>
                   <StatusBadge status={item.status} />
                 </TableCell>
