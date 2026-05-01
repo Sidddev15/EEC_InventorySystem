@@ -37,6 +37,13 @@ const steps = [
   "Confirm Production",
 ];
 
+const stepDescriptions = [
+  "Choose the finished or semi-finished variant that will receive stock from this production run.",
+  "Enter the accepted production quantity only. Rejected quantity should not be posted here.",
+  "Add every raw material line consumed by this production entry and confirm the source location.",
+  "Check the stock effect before posting production. This step writes the final inventory movement.",
+];
+
 function formatQuantity(value: number, unit: string) {
   return `${new Intl.NumberFormat("en-IN", {
     maximumFractionDigits: 3,
@@ -61,6 +68,9 @@ export function ProductionWizard({
 
   const outputItem = outputItems.find((item) => item.id === outputItemId);
   const producedQuantity = Number(productionQuantity) || 0;
+  const selectedConsumptionCount = consumptions.filter(
+    (line) => line.inventoryItemId && Number(line.quantity) > 0
+  ).length;
   const hasValidConsumption = consumptions.every(
     (line) => line.inventoryItemId && Number(line.quantity) > 0
   );
@@ -188,52 +198,154 @@ export function ProductionWizard({
         ))}
       </ol>
 
-      <div className={stepIndex === 0 ? "space-y-1.5" : "hidden"}>
-        <label className="text-sm font-medium" htmlFor="outputItemId">
-          Product Variant to Produce
-        </label>
-        <select
-          className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-          id="outputItemId"
-          name="outputItemId"
-          required
-          value={outputItemId}
-          onChange={(event) => setOutputItemId(event.target.value)}
-        >
-          <option value="">Select finished or semi-finished variant</option>
-          {outputItems.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.label} / {item.location} / {item.unit}
-            </option>
-          ))}
-        </select>
-        <p className="text-xs leading-5 text-muted-foreground">
-          Select the finished or semi-finished variant that will receive stock.
+      <div className="rounded-xl border bg-background p-4">
+        <p className="text-sm font-semibold text-foreground">{steps[stepIndex]}</p>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          {stepDescriptions[stepIndex]}
         </p>
       </div>
 
-      <div className={stepIndex === 1 ? "space-y-1.5" : "hidden"}>
-        <label className="text-sm font-medium" htmlFor="productionQuantity">
-          Production Quantity
-        </label>
-        <Input
-          id="productionQuantity"
-          name="productionQuantity"
-          inputMode="decimal"
-          required
-          value={productionQuantity}
-          onChange={(event) => setProductionQuantity(event.target.value)}
-          placeholder="Quantity produced"
-        />
-        <p className="text-xs leading-5 text-muted-foreground">
-          Enter the actual accepted production quantity. This will increase
-          finished stock after confirmation.
-        </p>
+      <div className={stepIndex === 0 ? "space-y-4" : "hidden"}>
+        <div className="space-y-1.5 rounded-xl border bg-background p-4">
+          <label className="text-sm font-medium" htmlFor="outputItemId">
+            Product Variant to Produce
+          </label>
+          <select
+            className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+            id="outputItemId"
+            name="outputItemId"
+            required
+            value={outputItemId}
+            onChange={(event) => setOutputItemId(event.target.value)}
+          >
+            <option value="">Select finished or semi-finished variant</option>
+            {outputItems.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label} / {item.location} / {item.unit}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs leading-5 text-muted-foreground">
+            Select the exact stock line that will receive produced quantity.
+          </p>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-lg border bg-card p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Variant
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {outputItem?.variantName ?? "No variant selected"}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {outputItem?.itemName ?? "Parent product will appear here"}
+            </p>
+          </div>
+          <div className="rounded-lg border bg-card p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Current Output Stock
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {outputItem
+                ? `${outputItem.currentStock} ${outputItem.unit}`
+                : "0"}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Stock before posting production
+            </p>
+          </div>
+          <div className="rounded-lg border bg-card p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Output Location
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {outputItem?.location ?? "Not selected"}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Produced stock is added location-wise
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className={stepIndex === 1 ? "space-y-4" : "hidden"}>
+        <div className="space-y-1.5 rounded-xl border bg-background p-4">
+          <label className="text-sm font-medium" htmlFor="productionQuantity">
+            Production Quantity
+          </label>
+          <Input
+            id="productionQuantity"
+            name="productionQuantity"
+            inputMode="decimal"
+            required
+            value={productionQuantity}
+            onChange={(event) => setProductionQuantity(event.target.value)}
+            placeholder="Quantity produced"
+          />
+          <p className="text-xs leading-5 text-muted-foreground">
+            Enter the actual accepted production quantity. This will increase
+            finished stock after confirmation.
+          </p>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="rounded-lg border bg-card p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Selected Output Variant
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {outputItem?.variantName ?? "Select the output variant first"}
+            </p>
+          </div>
+          <div className="rounded-lg border bg-card p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Quantity to Add
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {outputItem
+                ? `${producedQuantity || 0} ${outputItem.unit}`
+                : `${producedQuantity || 0}`}
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className={stepIndex === 2 ? "space-y-3" : "hidden"}>
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-lg border bg-card p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Output Variant
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {outputItem?.variantName ?? "Not selected"}
+            </p>
+          </div>
+          <div className="rounded-lg border bg-card p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Production Quantity
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {outputItem
+                ? `${producedQuantity || 0} ${outputItem.unit}`
+                : `${producedQuantity || 0}`}
+            </p>
+          </div>
+          <div className="rounded-lg border bg-card p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Valid Consumption Lines
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {selectedConsumptionCount}
+            </p>
+          </div>
+        </div>
+
         {consumptions.map((line, index) => (
-          <div className="grid gap-3 rounded-lg border p-3 md:grid-cols-[1fr_160px_auto]" key={line.key}>
+          <div
+            className="grid gap-3 rounded-xl border bg-background p-4 md:grid-cols-[1fr_180px_auto]"
+            key={line.key}
+          >
             <div className="space-y-1.5">
               <label className="text-sm font-medium" htmlFor={`material-${line.key}`}>
                 Consumed Material {index + 1}
@@ -254,6 +366,21 @@ export function ProductionWizard({
                   </option>
                 ))}
               </select>
+              {line.inventoryItemId ? (
+                <p className="text-xs leading-5 text-muted-foreground">
+                  {(() => {
+                    const selectedItem = consumptionItems.find(
+                      (item) => item.id === line.inventoryItemId
+                    );
+
+                    if (!selectedItem) {
+                      return "Select a valid raw material stock line.";
+                    }
+
+                    return `Available: ${selectedItem.currentStock} ${selectedItem.unit} in ${selectedItem.location}`;
+                  })()}
+                </p>
+              ) : null}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium" htmlFor={`qty-${line.key}`}>
