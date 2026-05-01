@@ -39,6 +39,7 @@ export async function listProducts(
     where: {
       ...(status === "active" ? { isActive: true } : {}),
       ...(status === "inactive" ? { isActive: false } : {}),
+      ...(filters.categoryId ? { categoryId: filters.categoryId } : {}),
       ...(search
         ? {
             OR: [

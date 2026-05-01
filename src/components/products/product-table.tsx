@@ -45,7 +45,9 @@ export function ProductTable({ products }: ProductTableProps) {
               <TableRow key={product.id}>
                 <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell>{product.category}</TableCell>
-                <TableCell>{product.variantsCount}</TableCell>
+                <TableCell className="font-semibold tabular-nums">
+                  {product.variantsCount}
+                </TableCell>
                 <TableCell>
                   <StatusBadge status={product.isActive ? "normal" : "info"}>
                     {product.isActive ? "Active" : "Inactive"}

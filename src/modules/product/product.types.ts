@@ -1,5 +1,6 @@
 export type ProductListFilters = {
   search?: string;
+  categoryId?: string;
   status?: "all" | "active" | "inactive";
 };
 
