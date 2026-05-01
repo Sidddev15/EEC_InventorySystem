@@ -75,6 +75,24 @@ type AppSidebarProps = {
   role: UserRole;
 };
 
+const roleSwitchOptions: Record<
+  UserRole,
+  Array<{ label: string; href: string; disabled?: boolean }>
+> = {
+  ADMIN: [
+    { label: "Factory", href: "/factory" },
+    { label: "Corporate", href: "/dashboard" },
+  ],
+  FACTORY: [
+    { label: "Factory", href: "/factory" },
+    { label: "Corporate", href: "/dashboard", disabled: true },
+  ],
+  CORPORATE: [
+    { label: "Factory", href: "/factory", disabled: true },
+    { label: "Corporate", href: "/dashboard" },
+  ],
+};
+
 export function AppSidebar({ role }: AppSidebarProps) {
   const pathname = usePathname();
   const allowedPaths = ROLE_ALLOWED_PATHS[role];
@@ -87,16 +105,50 @@ export function AppSidebar({ role }: AppSidebarProps) {
   return (
     <>
       <aside className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex lg:flex-col">
-        <div className="border-b border-sidebar-border px-5 py-5">
+        <div className="border-b border-sidebar-border px-5 py-6">
           <p className="text-base font-semibold tracking-normal text-white">
             EEC Inventory System
           </p>
           <p className="mt-1 text-xs text-slate-300">
             Industrial filter stock control
           </p>
+          <div className="mt-4 rounded-xl border border-slate-700 bg-slate-950/50 p-1">
+            <div className="grid grid-cols-2 gap-1">
+              {roleSwitchOptions[role].map((option) => {
+                const isActive =
+                  option.label === "Factory"
+                    ? pathname === "/factory"
+                    : pathname === "/dashboard";
+
+                if (option.disabled) {
+                  return (
+                    <span
+                      className="flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium text-slate-500"
+                      key={option.label}
+                    >
+                      {option.label}
+                    </span>
+                  );
+                }
+
+                return (
+                  <Link
+                    className={cn(
+                      "flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white",
+                      isActive && "bg-primary text-white hover:bg-primary"
+                    )}
+                    href={option.href}
+                    key={option.label}
+                  >
+                    {option.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
-        <nav className="flex-1 space-y-1.5 px-3 py-4">
+        <nav className="flex-1 space-y-2 px-3 py-5">
           {visibleItems.map((item) => {
             const Icon = item.icon;
             const isActive = item.exact
@@ -108,8 +160,8 @@ export function AppSidebar({ role }: AppSidebarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex h-10 items-center gap-3 rounded-lg border border-transparent px-3 text-sm font-medium text-slate-300 transition-colors hover:border-sidebar-border hover:bg-sidebar-accent hover:text-white",
-                  isActive && "border-sidebar-border bg-sidebar-accent text-white"
+                  "flex h-11 items-center gap-3 rounded-xl border border-transparent px-3 text-sm font-medium text-slate-300 transition-colors hover:border-slate-700 hover:bg-slate-800 hover:text-white",
+                  isActive && "border-blue-500/40 bg-primary text-white shadow-sm"
                 )}
               >
                 <Icon className="size-4" aria-hidden="true" />

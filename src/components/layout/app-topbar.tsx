@@ -1,8 +1,10 @@
+"use client";
+
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Bell, Plus, Search, Share2 } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ROLE_LABELS } from "@/lib/constants/roles";
 import { type AuthenticatedUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -11,51 +13,86 @@ type AppTopbarProps = {
   user: AuthenticatedUser;
 };
 
+const titleMap = [
+  { prefix: "/factory", title: "Factory Panel" },
+  { prefix: "/dashboard", title: "Dashboard" },
+  { prefix: "/products", title: "Products" },
+  { prefix: "/inventory", title: "Inventory" },
+  { prefix: "/production", title: "Production" },
+  { prefix: "/transactions", title: "Transactions" },
+  { prefix: "/reports", title: "Reports" },
+  { prefix: "/settings", title: "Settings" },
+];
+
+function resolveTitle(pathname: string) {
+  return (
+    titleMap.find((entry) => pathname === entry.prefix || pathname.startsWith(`${entry.prefix}/`))
+      ?.title ?? "EEC Inventory System"
+  );
+}
+
 export function AppTopbar({ user }: AppTopbarProps) {
+  const pathname = usePathname();
+  const title = resolveTitle(pathname);
+
   return (
     <header className="sticky top-0 z-20 border-b bg-card/95 backdrop-blur-sm">
-      <div className="flex h-14 items-center gap-2 px-4 sm:gap-3 sm:px-6">
-        <div className="hidden min-w-0 flex-1 sm:block">
-          <form className="relative max-w-md" action="/products">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <Input
-              className="bg-background pl-9"
-              name="q"
-              placeholder="Search products, variants, stock"
-              type="search"
-            />
-          </form>
+      <div className="grid h-16 grid-cols-[auto_1fr_auto] items-center gap-3 px-4 sm:px-6">
+        <div className="flex items-center gap-2">
+          <Link
+            className={cn(buttonVariants({ variant: "outline", size: "icon-sm" }))}
+            href="/products"
+          >
+            <Search className="size-4" aria-hidden="true" />
+            <span className="sr-only">Search</span>
+          </Link>
+          <div className="hidden sm:block">
+            <p className="text-sm font-medium text-slate-900">{user.name}</p>
+            <p className="text-xs text-slate-500">{ROLE_LABELS[user.role]}</p>
+          </div>
         </div>
 
-        <Link
-          className={cn(
-            buttonVariants({ variant: "outline", size: "icon-sm" }),
-            "sm:hidden"
-          )}
-          href="/products"
-        >
-          <Search className="size-4" aria-hidden="true" />
-          <span className="sr-only">Search products</span>
-        </Link>
-
-        <Link
-          className={cn(buttonVariants({ size: "lg" }), "ml-auto sm:ml-0")}
-          href="/factory"
-        >
-          <Plus className="size-4" aria-hidden="true" />
-          <span className="hidden sm:inline">Factory Action</span>
-          <span className="sm:hidden">Action</span>
-        </Link>
-
-        <div className="hidden border-l pl-3 text-right sm:block">
-          <p className="text-sm font-medium leading-5 text-foreground">{user.name}</p>
-          <p className="text-xs text-muted-foreground">{ROLE_LABELS[user.role]}</p>
+        <div className="min-w-0 text-center">
+          <p className="truncate text-xl font-semibold text-slate-900">{title}</p>
         </div>
 
-        <LogoutButton />
+        <div className="flex items-center justify-end gap-2">
+          <button
+            className={cn(buttonVariants({ variant: "outline", size: "icon-sm" }))}
+            type="button"
+            onClick={async () => {
+              if (typeof navigator === "undefined") {
+                return;
+              }
+
+              if (navigator.share) {
+                await navigator.share({
+                  title,
+                  url: window.location.href,
+                });
+                return;
+              }
+
+              await navigator.clipboard.writeText(window.location.href);
+            }}
+          >
+            <Share2 className="size-4" aria-hidden="true" />
+            <span className="sr-only">Share page</span>
+          </button>
+          <button
+            className={cn(buttonVariants({ variant: "outline", size: "icon-sm" }))}
+            type="button"
+          >
+            <Bell className="size-4" aria-hidden="true" />
+            <span className="sr-only">Notifications</span>
+          </button>
+          <Link className={cn(buttonVariants({ size: "default" }))} href="/factory">
+            <Plus className="size-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Factory</span>
+            <span className="sm:hidden">Open</span>
+          </Link>
+          <LogoutButton />
+        </div>
       </div>
     </header>
   );
