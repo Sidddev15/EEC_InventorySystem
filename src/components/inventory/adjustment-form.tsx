@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/select";
 import { type InventoryItemOption } from "@/modules/inventory/inventory.types";
 
 type AdjustmentFormProps = {
@@ -54,28 +55,27 @@ export function AdjustmentForm({ items }: AdjustmentFormProps) {
   return (
     <form className="space-y-5" onSubmit={onSubmit}>
       <div className="space-y-4 rounded-xl border bg-background p-4">
-        <div className="space-y-1.5">
+        <div className="flex flex-col gap-2">
           <label className="text-sm font-medium" htmlFor="inventoryItemId">
             Item
           </label>
-          <select
-            className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+          <SelectField
             id="inventoryItemId"
             name="inventoryItemId"
+            options={[
+              { value: "", label: "Select item" },
+              ...items.map((item) => ({
+                value: item.id,
+                label: `${item.label} / ${item.location} / ${item.unit}`,
+              })),
+            ]}
             required
             value={selectedItemId}
-            onChange={(event) => setSelectedItemId(event.target.value)}
-          >
-            <option value="">Select item</option>
-            {items.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.label} / {item.location} / {item.unit}
-              </option>
-            ))}
-          </select>
+            onValueChange={setSelectedItemId}
+          />
         </div>
 
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <div className="rounded-lg border bg-card p-3">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Variant
@@ -113,30 +113,30 @@ export function AdjustmentForm({ items }: AdjustmentFormProps) {
       </div>
 
       <div className="space-y-4 rounded-xl border bg-background p-4">
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="space-y-1.5">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="adjustmentType">
               Adjustment Type
             </label>
-            <select
-              className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+            <SelectField
               id="adjustmentType"
               name="adjustmentType"
+              options={[
+                { value: "INCREASE", label: "Increase" },
+                { value: "DECREASE", label: "Decrease" },
+              ]}
               required
               value={adjustmentType}
-              onChange={(event) => setAdjustmentType(event.target.value)}
-            >
-              <option value="INCREASE">Increase</option>
-              <option value="DECREASE">Decrease</option>
-            </select>
+              onValueChange={setAdjustmentType}
+            />
           </div>
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="quantity">
               Quantity
             </label>
             <Input id="quantity" name="quantity" inputMode="decimal" required />
           </div>
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="referenceNo">
               Reference Number
             </label>
@@ -150,7 +150,7 @@ export function AdjustmentForm({ items }: AdjustmentFormProps) {
             : "Increase only when stock exists physically but was missed in a prior inward or production entry."}
         </div>
 
-        <div className="space-y-1.5">
+        <div className="flex flex-col gap-2">
           <label className="text-sm font-medium" htmlFor="reason">
             Reason
           </label>

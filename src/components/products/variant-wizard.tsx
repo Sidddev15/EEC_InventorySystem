@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { InlineAiSuggestion } from "@/components/ai/inline-ai-suggestion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/select";
 import {
   type ProductOption,
   type UnitOption,
@@ -229,33 +230,32 @@ export function VariantWizard({
       </ol>
 
       <div className={stepIndex === 0 ? "grid gap-4" : "hidden"}>
-        <div className="space-y-1.5">
+        <div className="flex flex-col gap-2">
           <label className="text-sm font-medium" htmlFor="productId">
             Parent Product
           </label>
-          <select
-            className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+          <SelectField
             id="productId"
             name="productId"
+            options={[
+              { value: "", label: "Select parent product" },
+              ...products.map((product) => ({
+                value: product.id,
+                label: `${product.name} - ${product.category}`,
+              })),
+            ]}
             required
             value={productId}
-            onChange={(event) => {
-              setProductId(event.target.value);
+            onValueChange={(nextValue) => {
+              setProductId(nextValue);
               setHasConfirmed(false);
             }}
-          >
-            <option value="">Select parent product</option>
-            {products.map((product) => (
-              <option key={product.id} value={product.id}>
-                {product.name} - {product.category}
-              </option>
-            ))}
-          </select>
+          />
         </div>
       </div>
 
       <div className={stepIndex === 1 ? "grid gap-4" : "hidden"}>
-        <div className="space-y-1.5">
+        <div className="flex flex-col gap-2">
           <label className="text-sm font-medium" htmlFor="name">
             Variant Name
           </label>
@@ -283,8 +283,8 @@ export function VariantWizard({
         </div>
       </div>
 
-      <div className={stepIndex === 2 ? "grid gap-4 md:grid-cols-2" : "hidden"}>
-        <div className="space-y-1.5 rounded-xl border bg-background p-4">
+      <div className={stepIndex === 2 ? "grid grid-cols-1 gap-4 md:grid-cols-2" : "hidden"}>
+        <div className="flex flex-col gap-2 rounded-xl border bg-background p-4">
           <label className="text-sm font-medium" htmlFor="thickness">
             Thickness
           </label>
@@ -302,7 +302,7 @@ export function VariantWizard({
             Use the operational thickness used on the shop floor and in dispatch communication.
           </p>
         </div>
-        <div className="space-y-1.5 rounded-xl border bg-background p-4">
+        <div className="flex flex-col gap-2 rounded-xl border bg-background p-4">
           <label className="text-sm font-medium" htmlFor="gsm">
             GSM
           </label>
@@ -321,7 +321,7 @@ export function VariantWizard({
             Keep GSM numeric so variants stay comparable and searchable later.
           </p>
         </div>
-        <div className="space-y-1.5 rounded-xl border bg-background p-4">
+        <div className="flex flex-col gap-2 rounded-xl border bg-background p-4">
           <label className="text-sm font-medium" htmlFor="material">
             Material
           </label>
@@ -339,7 +339,7 @@ export function VariantWizard({
             Enter the actual filter media or assembly material used in stock handling.
           </p>
         </div>
-        <div className="space-y-1.5 rounded-xl border bg-background p-4">
+        <div className="flex flex-col gap-2 rounded-xl border bg-background p-4">
           <label className="text-sm font-medium" htmlFor="size">
             Size
           </label>
@@ -365,30 +365,29 @@ export function VariantWizard({
         </div>
       </div>
 
-      <div className={stepIndex === 3 ? "grid gap-4 md:grid-cols-2" : "hidden"}>
+      <div className={stepIndex === 3 ? "grid grid-cols-1 gap-4 md:grid-cols-2" : "hidden"}>
         <div className="space-y-4 rounded-xl border bg-background p-4">
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="unitId">
               Default Unit
             </label>
-            <select
-              className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+            <SelectField
               id="unitId"
               name="unitId"
+              options={[
+                { value: "", label: "Select unit" },
+                ...units.map((unit) => ({
+                  value: unit.id,
+                  label: `${unit.code} - ${unit.name}`,
+                })),
+              ]}
               required
               value={unitId}
-              onChange={(event) => {
-                setUnitId(event.target.value);
+              onValueChange={(nextValue) => {
+                setUnitId(nextValue);
                 setHasConfirmed(false);
               }}
-            >
-              <option value="">Select unit</option>
-              {units.map((unit) => (
-                <option key={unit.id} value={unit.id}>
-                  {unit.code} - {unit.name}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div className="rounded-lg border bg-card p-3">
@@ -407,25 +406,25 @@ export function VariantWizard({
           </div>
         </div>
         <div className="space-y-4 rounded-xl border bg-background p-4">
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="inventoryType">
               Inventory Type
             </label>
-            <select
-              className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+            <SelectField
               id="inventoryType"
               name="inventoryType"
+              options={[
+                { value: "RAW_MATERIAL", label: "Raw Material" },
+                { value: "SEMI_FINISHED", label: "Semi-Finished" },
+                { value: "FINISHED_GOODS", label: "Finished Goods" },
+              ]}
               required
               value={inventoryType}
-              onChange={(event) => {
-                setInventoryType(event.target.value);
+              onValueChange={(nextValue) => {
+                setInventoryType(nextValue);
                 setHasConfirmed(false);
               }}
-            >
-              <option value="RAW_MATERIAL">Raw Material</option>
-              <option value="SEMI_FINISHED">Semi-Finished</option>
-              <option value="FINISHED_GOODS">Finished Goods</option>
-            </select>
+            />
           </div>
 
           <div className="rounded-lg border bg-card p-3">

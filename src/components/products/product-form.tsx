@@ -6,6 +6,7 @@ import { InlineAiSuggestion } from "@/components/ai/inline-ai-suggestion";
 import { Button } from "@/components/ui/button";
 import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/select";
 import { type ProductCategoryOption } from "@/modules/product/product.types";
 
 type ProductFormProps = {
@@ -82,8 +83,8 @@ export function ProductForm({ categories }: ProductFormProps) {
   return (
     <form className="space-y-5" onSubmit={onSubmit}>
       <div className="rounded-xl border bg-background p-4">
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="name">
               Name
             </label>
@@ -100,25 +101,24 @@ export function ProductForm({ categories }: ProductFormProps) {
             </p>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="categoryId">
               Category
             </label>
-            <select
-              className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+            <SelectField
               id="categoryId"
               name="categoryId"
+              options={[
+                { value: "", label: "Select category" },
+                ...categories.map((category) => ({
+                  value: category.id,
+                  label: category.name,
+                })),
+              ]}
               required
               value={categoryId}
-              onChange={(event) => setCategoryId(event.target.value)}
-            >
-              <option value="">Select category</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+              onValueChange={setCategoryId}
+            />
             <p className="text-xs leading-5 text-muted-foreground">
               Categories should match the industrial grouping used in reporting and master data.
             </p>
@@ -127,7 +127,7 @@ export function ProductForm({ categories }: ProductFormProps) {
       </div>
 
       <div className="rounded-xl border bg-background p-4">
-        <div className="space-y-1.5">
+        <div className="flex flex-col gap-2">
           <label className="text-sm font-medium" htmlFor="description">
             Description
           </label>

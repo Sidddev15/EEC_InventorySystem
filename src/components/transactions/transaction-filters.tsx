@@ -1,28 +1,28 @@
 import Link from "next/link";
-import { Download, Search } from "lucide-react";
+import { Download, Funnel, RotateCcw, Search } from "lucide-react";
 import { buttonVariants, Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { DatePickerField } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { type ProductOption } from "@/modules/product/product.types";
 import { transactionTypeOptions } from "@/modules/transaction/transaction.service";
-import { type TransactionFilters as TransactionFilterValues } from "@/modules/transaction/transaction.types";
+import {
+  type TransactionFilters as TransactionFilterValues,
+  type TransactionUserOption,
+} from "@/modules/transaction/transaction.types";
 
 type TransactionFiltersProps = {
   filters: TransactionFilterValues;
   products: ProductOption[];
+  users: TransactionUserOption[];
 };
-
-const users = [
-  { id: "", label: "All users" },
-  { id: "admin", label: "Admin User" },
-  { id: "factory", label: "Factory User" },
-  { id: "corporate", label: "Corporate User" },
-];
 
 export function TransactionFilters({
   filters,
   products,
+  users,
 }: TransactionFiltersProps) {
   const exportParams = new URLSearchParams();
 
@@ -35,7 +35,7 @@ export function TransactionFilters({
 
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent className="p-5">
         <div className="mb-4 flex flex-col gap-1">
           <p className="text-sm font-semibold text-foreground">Filter transaction log</p>
           <p className="text-sm text-muted-foreground">
@@ -44,103 +44,131 @@ export function TransactionFilters({
         </div>
         <form
           action="/transactions"
-          className="grid gap-3 lg:grid-cols-[1.2fr_180px_220px_150px_150px_180px_auto_auto_auto]"
+          className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[minmax(220px,1fr)_170px_200px_140px_140px_200px] 2xl:grid-cols-[minmax(240px,1.2fr)_170px_210px_140px_140px_210px_auto]"
         >
-          <div className="relative">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <Input
-              className="pl-9"
-              defaultValue={filters.search}
-              name="search"
-              placeholder="Search reference, product, variant"
-            />
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Search
+            </label>
+            <div className="relative">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <Input
+                className="pl-9"
+                defaultValue={filters.search}
+                name="search"
+                placeholder="Reference, product, variant, remarks"
+              />
+            </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Type
             </label>
-            <select
-              className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+            <SelectField
               defaultValue={filters.type ?? "all"}
               name="type"
-            >
-              <option value="all">All types</option>
-              {transactionTypeOptions.map((type) => (
-                <option key={type} value={type}>
-                  {type.replaceAll("_", " ")}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: "all", label: "All types" },
+                ...transactionTypeOptions.map((type) => ({
+                  value: type,
+                  label: type.replaceAll("_", " "),
+                })),
+              ]}
+            />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Product
             </label>
-            <select
-              className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+            <SelectField
               defaultValue={filters.productId}
               name="productId"
-            >
-              <option value="">All products</option>
-              {products.map((product) => (
-                <option key={product.id} value={product.id}>
-                  {product.name}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: "", label: "All products" },
+                ...products.map((product) => ({
+                  value: product.id,
+                  label: product.name,
+                })),
+              ]}
+            />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               From
             </label>
-            <Input defaultValue={filters.dateFrom} name="dateFrom" type="date" />
+            <DatePickerField
+              defaultValue={filters.dateFrom}
+              name="dateFrom"
+              placeholder="From date"
+            />
           </div>
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               To
             </label>
-            <Input defaultValue={filters.dateTo} name="dateTo" type="date" />
+            <DatePickerField
+              defaultValue={filters.dateTo}
+              name="dateTo"
+              placeholder="To date"
+            />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               User
             </label>
-            <select
-              className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+            <SelectField
               defaultValue={filters.userId}
               name="userId"
-            >
-              {users.map((user) => (
-                <option key={user.id || "all"} value={user.id}>
-                  {user.label}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: "", label: "All users" },
+                ...users.map((user) => ({
+                  value: user.id,
+                  label: user.label,
+                })),
+              ]}
+            />
           </div>
 
-          <Button className="self-end" type="submit">
-            Filter
-          </Button>
-          <Link
-            className={cn(buttonVariants({ variant: "outline" }), "self-end")}
-            href={`/api/reports/transactions?${exportParams.toString()}`}
-          >
-            <Download className="size-4" aria-hidden="true" />
-            Export
-          </Link>
-          <Link
-            className={cn(buttonVariants({ variant: "outline" }), "self-end")}
-            href="/transactions"
-          >
-            Reset
-          </Link>
+          <div className="flex flex-wrap items-end gap-2 md:col-span-2 xl:col-span-full 2xl:col-span-1 2xl:justify-end">
+            <Button
+              aria-label="Apply filters"
+              className="self-end"
+              size="icon-sm"
+              title="Apply filters"
+              type="submit"
+            >
+              <Funnel className="size-4" aria-hidden="true" />
+            </Button>
+            <Link
+              aria-label="Export transactions"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "icon-sm" }),
+                "self-end"
+              )}
+              href={`/api/reports/transactions?${exportParams.toString()}`}
+              title="Export transactions"
+            >
+              <Download className="size-4" aria-hidden="true" />
+            </Link>
+            <Link
+              aria-label="Reset filters"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "icon-sm" }),
+                "self-end"
+              )}
+              href="/transactions"
+              title="Reset filters"
+            >
+              <RotateCcw className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
         </form>
       </CardContent>
     </Card>

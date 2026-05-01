@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { DataTableShell } from "@/components/ui/data-table-shell";
 import { Button } from "@/components/ui/button";
+import { DataTableShell } from "@/components/ui/data-table-shell";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
@@ -18,59 +18,54 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  type SettingsLocationItem,
-  type SettingsLocationType,
-} from "@/modules/settings/settings.types";
+import { type ManagedUserListItem } from "@/modules/auth/auth.service";
 import { SettingsModal } from "./settings-modal";
 
-type LocationsManagerProps = {
-  initialItems: SettingsLocationItem[];
+type UsersManagerProps = {
+  initialItems: ManagedUserListItem[];
+  currentUserId: string;
 };
 
-type LocationDraft = {
+type UserDraft = {
   id?: string;
   name: string;
-  description: string;
-  locationType: SettingsLocationType;
+  email: string;
+  role: "ADMIN" | "FACTORY" | "CORPORATE";
+  password: string;
   isActive: boolean;
 };
 
-const emptyDraft: LocationDraft = {
+const emptyDraft: UserDraft = {
   name: "",
-  description: "",
-  locationType: "STOCK_HOLDING",
+  email: "",
+  role: "FACTORY",
+  password: "",
   isActive: true,
 };
 
-function locationTypeLabel(value: SettingsLocationType) {
-  return value === "STOCK_HOLDING" ? "Stock Holding" : "Reporting Only";
-}
-
-export function LocationsManager({ initialItems }: LocationsManagerProps) {
+export function UsersManager({ initialItems, currentUserId }: UsersManagerProps) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
   const [search, setSearch] = useState("");
-  const [draft, setDraft] = useState<LocationDraft>(emptyDraft);
+  const [draft, setDraft] = useState<UserDraft>(emptyDraft);
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const filteredItems = items.filter((item) => {
+  const filteredItems = useMemo(() => {
     const query = search.trim().toLowerCase();
 
     if (!query) {
-      return true;
+      return items;
     }
 
-    return (
-      item.name.toLowerCase().includes(query) ||
-      (item.description ?? "").toLowerCase().includes(query) ||
-      locationTypeLabel(item.isStockHolding ? "STOCK_HOLDING" : "REPORTING_ONLY")
-        .toLowerCase()
-        .includes(query)
+    return items.filter(
+      (item) =>
+        item.name.toLowerCase().includes(query) ||
+        item.email.toLowerCase().includes(query) ||
+        item.role.toLowerCase().includes(query)
     );
-  });
+  }, [items, search]);
 
   function openCreate() {
     setDraft(emptyDraft);
@@ -78,12 +73,13 @@ export function LocationsManager({ initialItems }: LocationsManagerProps) {
     setIsOpen(true);
   }
 
-  function openEdit(item: SettingsLocationItem) {
+  function openEdit(item: ManagedUserListItem) {
     setDraft({
       id: item.id,
       name: item.name,
-      description: item.description ?? "",
-      locationType: item.isStockHolding ? "STOCK_HOLDING" : "REPORTING_ONLY",
+      email: item.email,
+      role: item.role,
+      password: "",
       isActive: item.isActive,
     });
     setError(null);
@@ -91,18 +87,18 @@ export function LocationsManager({ initialItems }: LocationsManagerProps) {
   }
 
   function closeModal() {
+    setIsOpen(false);
     setDraft(emptyDraft);
     setError(null);
-    setIsOpen(false);
   }
 
-  async function saveLocation() {
+  async function saveUser() {
     setError(null);
     setIsSubmitting(true);
 
     const isEdit = Boolean(draft.id);
     const response = await fetch(
-      isEdit ? `/api/settings/locations/${draft.id}` : "/api/settings/locations",
+      isEdit ? `/api/settings/users/${draft.id}` : "/api/settings/users",
       {
         method: isEdit ? "PATCH" : "POST",
         headers: {
@@ -110,8 +106,9 @@ export function LocationsManager({ initialItems }: LocationsManagerProps) {
         },
         body: JSON.stringify({
           name: draft.name,
-          description: draft.description,
-          locationType: draft.locationType,
+          email: draft.email,
+          role: draft.role,
+          password: draft.password,
           isActive: draft.isActive,
         }),
       }
@@ -121,49 +118,50 @@ export function LocationsManager({ initialItems }: LocationsManagerProps) {
 
     if (!response.ok) {
       const data = (await response.json()) as { message?: string };
-      setError(data.message ?? "Unable to save location.");
+      setError(data.message ?? "Unable to save user.");
       return;
     }
 
-    const saved = (await response.json()) as SettingsLocationItem;
+    const saved = (await response.json()) as ManagedUserListItem;
+
     setItems((current) => {
       const next = isEdit
         ? current.map((item) => (item.id === saved.id ? saved : item))
         : [saved, ...current];
 
-      return next.sort(
-        (left, right) =>
-          Number(right.isStockHolding) - Number(left.isStockHolding) ||
-          Number(right.isActive) - Number(left.isActive) ||
-          left.name.localeCompare(right.name)
+      return next.sort((left, right) =>
+        left.role.localeCompare(right.role) || left.name.localeCompare(right.name)
       );
     });
+
     closeModal();
     router.refresh();
   }
 
-  async function toggleStatus(item: SettingsLocationItem) {
+  async function toggleStatus(item: ManagedUserListItem) {
     setError(null);
-    const response = await fetch(`/api/settings/locations/${item.id}`, {
+
+    const response = await fetch(`/api/settings/users/${item.id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         name: item.name,
-        description: item.description ?? "",
-        locationType: item.isStockHolding ? "STOCK_HOLDING" : "REPORTING_ONLY",
+        email: item.email,
+        role: item.role,
+        password: "",
         isActive: !item.isActive,
       }),
     });
 
     if (!response.ok) {
       const data = (await response.json()) as { message?: string };
-      setError(data.message ?? "Unable to update location status.");
+      setError(data.message ?? "Unable to update user status.");
       return;
     }
 
-    const saved = (await response.json()) as SettingsLocationItem;
+    const saved = (await response.json()) as ManagedUserListItem;
     setItems((current) =>
       current.map((candidate) => (candidate.id === saved.id ? saved : candidate))
     );
@@ -173,8 +171,8 @@ export function LocationsManager({ initialItems }: LocationsManagerProps) {
   return (
     <>
       <DataTableShell
-        title="Location Master"
-        description="Stock-holding locations create inventory rows for every active variant. Reporting-only locations should not hold stock."
+        title="Employee Accounts"
+        description="Admins create and control real login accounts for factory and corporate employees."
         actions={
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <div className="relative min-w-64">
@@ -184,70 +182,64 @@ export function LocationsManager({ initialItems }: LocationsManagerProps) {
               />
               <Input
                 className="pl-9"
-                placeholder="Search locations"
+                placeholder="Search employees"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
               />
             </div>
             <Button type="button" onClick={openCreate}>
               <Plus className="size-4" aria-hidden="true" />
-              Add Location
+              Add Employee
             </Button>
           </div>
         }
       >
-        {error ? <div className="border-b p-4"><FormMessage tone="error">{error}</FormMessage></div> : null}
+        {error ? (
+          <div className="border-b p-4">
+            <FormMessage tone="error">{error}</FormMessage>
+          </div>
+        ) : null}
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Inventory Rows</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Created</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredItems.length > 0 ? (
-              filteredItems.map((location) => (
-                <TableRow key={location.id}>
-                  <TableCell className="font-medium">{location.name}</TableCell>
-                  <TableCell>{location.description || "Not set"}</TableCell>
+              filteredItems.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.role}</TableCell>
                   <TableCell>
-                    <StatusBadge
-                      status={location.isStockHolding ? "normal" : "info"}
-                    >
-                      {locationTypeLabel(
-                        location.isStockHolding ? "STOCK_HOLDING" : "REPORTING_ONLY"
-                      )}
+                    <StatusBadge status={user.isActive ? "normal" : "info"}>
+                      {user.isActive ? "Active" : "Inactive"}
                     </StatusBadge>
                   </TableCell>
-                  <TableCell className="font-semibold tabular-nums">
-                    {location.inventoryItemsCount}
-                  </TableCell>
                   <TableCell>
-                    <StatusBadge status={location.isActive ? "normal" : "info"}>
-                      {location.isActive ? "Active" : "Inactive"}
-                    </StatusBadge>
+                    {new Intl.DateTimeFormat("en-IN", {
+                      dateStyle: "medium",
+                    }).format(new Date(user.createdAt))}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEdit(location)}
-                      >
+                      <Button type="button" size="sm" variant="outline" onClick={() => openEdit(user)}>
                         Edit
                       </Button>
                       <Button
                         type="button"
-                        variant={location.isActive ? "destructive" : "outline"}
                         size="sm"
-                        onClick={() => toggleStatus(location)}
+                        variant={user.isActive ? "destructive" : "outline"}
+                        disabled={user.id === currentUserId}
+                        onClick={() => toggleStatus(user)}
                       >
-                        {location.isActive ? "Deactivate" : "Activate"}
+                        {user.isActive ? "Deactivate" : "Activate"}
                       </Button>
                     </div>
                   </TableCell>
@@ -257,8 +249,8 @@ export function LocationsManager({ initialItems }: LocationsManagerProps) {
               <TableRow>
                 <TableCell className="p-0" colSpan={6}>
                   <EmptyState
-                    title="No locations found"
-                    description="Adjust the search or add a new location."
+                    title="No employee accounts found"
+                    description="Adjust the search or create a new employee login."
                   />
                 </TableCell>
               </TableRow>
@@ -268,56 +260,77 @@ export function LocationsManager({ initialItems }: LocationsManagerProps) {
       </DataTableShell>
 
       <SettingsModal
-        title={draft.id ? "Edit Location" : "Add Location"}
-        description="Create or update operational and reporting locations used by inventory and production."
+        title={draft.id ? "Edit Employee Account" : "Add Employee Account"}
+        description="Create controlled login credentials and role access for EEC employees."
         open={isOpen}
         onClose={closeModal}
       >
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium" htmlFor="location-name">
-                Name
+              <label className="text-sm font-medium" htmlFor="employee-name">
+                Full Name
               </label>
               <Input
-                id="location-name"
+                id="employee-name"
                 value={draft.name}
-                onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
+                onChange={(event) =>
+                  setDraft((current) => ({ ...current, name: event.target.value }))
+                }
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium" htmlFor="location-type">
-                Type
+              <label className="text-sm font-medium" htmlFor="employee-email">
+                Email
               </label>
-              <SelectField
-                id="location-type"
-                options={[
-                  { value: "STOCK_HOLDING", label: "Stock Holding" },
-                  { value: "REPORTING_ONLY", label: "Reporting Only" },
-                ]}
-                value={draft.locationType}
-                onValueChange={(nextValue) =>
-                  setDraft((current) => ({
-                    ...current,
-                    locationType: nextValue as SettingsLocationType,
-                  }))
+              <Input
+                id="employee-email"
+                type="email"
+                value={draft.email}
+                onChange={(event) =>
+                  setDraft((current) => ({ ...current, email: event.target.value }))
                 }
               />
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium" htmlFor="location-description">
-              Description
-            </label>
-            <textarea
-              className="min-h-24 w-full rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-              id="location-description"
-              value={draft.description}
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, description: event.target.value }))
-              }
-            />
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium" htmlFor="employee-role">
+                Role
+              </label>
+              <SelectField
+                id="employee-role"
+                options={[
+                  { value: "FACTORY", label: "FACTORY" },
+                  { value: "CORPORATE", label: "CORPORATE" },
+                  { value: "ADMIN", label: "ADMIN" },
+                ]}
+                value={draft.role}
+                onValueChange={(nextValue) =>
+                  setDraft((current) => ({
+                    ...current,
+                    role: nextValue as UserDraft["role"],
+                  }))
+                }
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium" htmlFor="employee-password">
+                {draft.id ? "New Password" : "Password"}
+              </label>
+              <Input
+                id="employee-password"
+                type="password"
+                value={draft.password}
+                onChange={(event) =>
+                  setDraft((current) => ({ ...current, password: event.target.value }))
+                }
+                placeholder={draft.id ? "Leave blank to keep current password" : "Minimum 8 characters"}
+              />
+            </div>
           </div>
+
           <label className="flex items-center gap-2 text-sm font-medium">
             <input
               checked={draft.isActive}
@@ -329,13 +342,25 @@ export function LocationsManager({ initialItems }: LocationsManagerProps) {
             />
             Active
           </label>
+
+          {draft.id ? (
+            <FormMessage tone="info">
+              Leave password blank when only updating name, email, role, or status.
+            </FormMessage>
+          ) : (
+            <FormMessage tone="info">
+              Use the employee&apos;s real email ID. The password is created here and can be changed later by admin.
+            </FormMessage>
+          )}
+
           {error ? <FormMessage tone="error">{error}</FormMessage> : null}
+
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={closeModal}>
               Cancel
             </Button>
-            <Button type="button" disabled={isSubmitting} onClick={saveLocation}>
-              {isSubmitting ? "Saving" : draft.id ? "Save Location" : "Create Location"}
+            <Button type="button" disabled={isSubmitting} onClick={saveUser}>
+              {isSubmitting ? "Saving" : draft.id ? "Save User" : "Create User"}
             </Button>
           </div>
         </div>

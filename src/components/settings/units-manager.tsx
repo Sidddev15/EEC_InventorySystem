@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/select";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table,
@@ -272,8 +273,8 @@ export function UnitsManager({ initialItems }: UnitsManagerProps) {
         onClose={closeModal}
       >
         <div className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-1.5">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="flex flex-col gap-2">
               <label className="text-sm font-medium" htmlFor="unit-code">
                 Code
               </label>
@@ -283,7 +284,7 @@ export function UnitsManager({ initialItems }: UnitsManagerProps) {
                 onChange={(event) => setDraft((current) => ({ ...current, code: event.target.value }))}
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="flex flex-col gap-2">
               <label className="text-sm font-medium" htmlFor="unit-name">
                 Name
               </label>
@@ -294,30 +295,27 @@ export function UnitsManager({ initialItems }: UnitsManagerProps) {
               />
             </div>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-1.5">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="flex flex-col gap-2">
               <label className="text-sm font-medium" htmlFor="unit-type">
                 Type
               </label>
-              <select
-                className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+              <SelectField
                 id="unit-type"
+                options={unitTypeOptions.map((option) => ({
+                  value: option.value,
+                  label: option.label,
+                }))}
                 value={draft.unitType}
-                onChange={(event) =>
+                onValueChange={(nextValue) =>
                   setDraft((current) => ({
                     ...current,
-                    unitType: event.target.value as SettingsUnitItem["unitType"],
+                    unitType: nextValue as SettingsUnitItem["unitType"],
                   }))
                 }
-              >
-                {unitTypeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
-            <div className="space-y-1.5">
+            <div className="flex flex-col gap-2">
               <label className="text-sm font-medium" htmlFor="unit-conversion">
                 Conversion
               </label>
@@ -335,7 +333,7 @@ export function UnitsManager({ initialItems }: UnitsManagerProps) {
               />
             </div>
           </div>
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="unit-description">
               Description
             </label>

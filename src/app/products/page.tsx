@@ -4,6 +4,7 @@ import { ProductTable } from "@/components/products/product-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/select";
 import { requireUser } from "@/lib/auth";
 import {
   listProductCategories,
@@ -42,7 +43,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <Card>
         <CardContent className="p-4">
           <form
-            className="grid gap-3 lg:grid-cols-[1fr_220px_180px_auto]"
+            className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-[1fr_220px_180px_auto]"
             action="/products"
           >
             <div className="relative">
@@ -57,27 +58,26 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                 defaultValue={filters.search}
               />
             </div>
-            <select
-              className="h-9 rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-              name="categoryId"
+            <SelectField
               defaultValue={filters.categoryId}
-            >
-              <option value="">All categories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-            <select
-              className="h-9 rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-              name="status"
+              name="categoryId"
+              options={[
+                { value: "", label: "All categories" },
+                ...categories.map((category) => ({
+                  value: category.id,
+                  label: category.name,
+                })),
+              ]}
+            />
+            <SelectField
               defaultValue={filters.status}
-            >
-              <option value="all">All status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+              name="status"
+              options={[
+                { value: "all", label: "All status" },
+                { value: "active", label: "Active" },
+                { value: "inactive", label: "Inactive" },
+              ]}
+            />
             <Button type="submit">Search</Button>
           </form>
         </CardContent>

@@ -243,7 +243,7 @@ export function CategoriesManager({ initialItems }: CategoriesManagerProps) {
         onClose={closeModal}
       >
         <div className="space-y-4">
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="category-name">
               Name
             </label>
@@ -253,7 +253,7 @@ export function CategoriesManager({ initialItems }: CategoriesManagerProps) {
               onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="category-description">
               Description
             </label>

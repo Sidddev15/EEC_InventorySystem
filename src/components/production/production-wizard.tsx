@@ -9,6 +9,7 @@ import { DataTableShell } from "@/components/ui/data-table-shell";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -50,6 +51,17 @@ function formatQuantity(value: number, unit: string) {
   }).format(value)} ${unit}`;
 }
 
+function createConsumptionLineKey() {
+  if (
+    typeof globalThis.crypto !== "undefined" &&
+    typeof globalThis.crypto.randomUUID === "function"
+  ) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `consumption-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function ProductionWizard({
   outputItems,
   consumptionItems,
@@ -64,7 +76,7 @@ export function ProductionWizard({
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [consumptions, setConsumptions] = useState<ConsumptionLine[]>([
-    { key: crypto.randomUUID(), inventoryItemId: "", quantity: "" },
+    { key: createConsumptionLineKey(), inventoryItemId: "", quantity: "" },
   ]);
 
   const outputItem = outputItems.find((item) => item.id === outputItemId);
@@ -127,7 +139,7 @@ export function ProductionWizard({
     setHasConfirmed(false);
     setConsumptions((current) => [
       ...current,
-      { key: crypto.randomUUID(), inventoryItemId: "", quantity: "" },
+      { key: createConsumptionLineKey(), inventoryItemId: "", quantity: "" },
     ]);
   }
 
@@ -220,30 +232,29 @@ export function ProductionWizard({
           <label className="text-sm font-medium" htmlFor="outputItemId">
             Product Variant to Produce
           </label>
-          <select
-            className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+          <SelectField
             id="outputItemId"
             name="outputItemId"
+            options={[
+              { value: "", label: "Select finished or semi-finished variant" },
+              ...outputItems.map((item) => ({
+                value: item.id,
+                label: `${item.label} / ${item.location} / ${item.unit}`,
+              })),
+            ]}
             required
             value={outputItemId}
-            onChange={(event) => {
-              setOutputItemId(event.target.value);
+            onValueChange={(nextValue) => {
+              setOutputItemId(nextValue);
               setHasConfirmed(false);
             }}
-          >
-            <option value="">Select finished or semi-finished variant</option>
-            {outputItems.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.label} / {item.location} / {item.unit}
-              </option>
-            ))}
-          </select>
+          />
           <p className="text-xs leading-5 text-muted-foreground">
             Select the exact stock line that will receive produced quantity.
           </p>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <div className="rounded-lg border bg-card p-3">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Variant
@@ -283,7 +294,7 @@ export function ProductionWizard({
       </div>
 
       <div className={stepIndex === 1 ? "space-y-4" : "hidden"}>
-        <div className="space-y-1.5 rounded-xl border bg-background p-4">
+        <div className="flex flex-col gap-2 rounded-xl border bg-background p-4">
           <label className="text-sm font-medium" htmlFor="productionQuantity">
             Production Quantity
           </label>
@@ -305,7 +316,7 @@ export function ProductionWizard({
           </p>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div className="rounded-lg border bg-card p-3">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Selected Output Variant
@@ -328,7 +339,7 @@ export function ProductionWizard({
       </div>
 
       <div className={stepIndex === 2 ? "space-y-3" : "hidden"}>
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <div className="rounded-lg border bg-card p-3">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Output Variant
@@ -359,29 +370,28 @@ export function ProductionWizard({
 
         {consumptions.map((line, index) => (
           <div
-            className="grid gap-3 rounded-xl border bg-background p-4 md:grid-cols-[1fr_180px_auto]"
+            className="grid grid-cols-1 gap-3 rounded-xl border bg-background p-4 md:grid-cols-[1fr_180px_auto]"
             key={line.key}
           >
-            <div className="space-y-1.5">
+            <div className="flex flex-col gap-2">
               <label className="text-sm font-medium" htmlFor={`material-${line.key}`}>
                 Consumed Material {index + 1}
               </label>
-              <select
-                className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+              <SelectField
                 id={`material-${line.key}`}
+                options={[
+                  { value: "", label: "Select raw material" },
+                  ...consumptionItems.map((item) => ({
+                    value: item.id,
+                    label: `${item.label} / ${item.location} / ${item.unit}`,
+                  })),
+                ]}
                 required
                 value={line.inventoryItemId}
-                onChange={(event) =>
-                  updateConsumptionLine(line.key, "inventoryItemId", event.target.value)
+                onValueChange={(nextValue) =>
+                  updateConsumptionLine(line.key, "inventoryItemId", nextValue)
                 }
-              >
-                <option value="">Select raw material</option>
-                {consumptionItems.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.label} / {item.location} / {item.unit}
-                  </option>
-                ))}
-              </select>
+              />
               {line.inventoryItemId ? (
                 <p className="text-xs leading-5 text-muted-foreground">
                   {(() => {
@@ -398,7 +408,7 @@ export function ProductionWizard({
                 </p>
               ) : null}
             </div>
-            <div className="space-y-1.5">
+            <div className="flex flex-col gap-2">
               <label className="text-sm font-medium" htmlFor={`qty-${line.key}`}>
                 Quantity
               </label>
@@ -434,8 +444,8 @@ export function ProductionWizard({
       </div>
 
       <div className={stepIndex === 3 ? "space-y-4" : "hidden"}>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="referenceNo">
               Reference Number
             </label>
