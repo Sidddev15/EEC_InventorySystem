@@ -1,17 +1,12 @@
 import Link from "next/link";
 import {
+  ArrowRight,
   Factory,
-  PackageCheck,
   PackagePlus,
   Truck,
-  Warehouse,
 } from "lucide-react";
-import { KpiCard } from "@/components/dashboard/kpi-card";
 import { PageHeader } from "@/components/layout/page-header";
-import { ActionButton } from "@/components/ui/action-button";
-import { buttonVariants } from "@/components/ui/button";
-import { DataTableShell } from "@/components/ui/data-table-shell";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -22,218 +17,236 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
-const lowStockAlerts = [
+const actionCards = [
+  {
+    title: "Add Raw Material",
+    description: "Record inward stock to the correct store location.",
+    href: "/inventory/inward",
+    icon: PackagePlus,
+    iconClassName: "bg-green-100 text-green-700",
+  },
+  {
+    title: "Log Production",
+    description: "Post consumed material and finished output together.",
+    href: "/production/new",
+    icon: Factory,
+    iconClassName: "bg-blue-100 text-blue-700",
+  },
+  {
+    title: "Dispatch Goods",
+    description: "Review movement history before dispatch posting.",
+    href: "/transactions",
+    icon: Truck,
+    iconClassName: "bg-amber-100 text-amber-700",
+  },
+] as const;
+
+const rawMaterialAlerts = [
   {
     item: "Synthetic Filter Media Roll",
     location: "Factory Store",
     available: "4 Roll",
-    status: "low" as const,
+    priority: "low",
   },
   {
     item: "Glass Fiber Media",
     location: "Factory Store",
     available: "126 Sq Meter",
-    status: "reorder" as const,
+    priority: "reorder",
   },
   {
-    item: "Pocket Filter F7",
-    location: "Finished Goods Store",
-    available: "28 NOS",
-    status: "reorder" as const,
+    item: "Pocket Filter F7 Bag",
+    location: "Production Floor",
+    available: "12 NOS",
+    priority: "reorder",
   },
-];
+] as const;
 
-const recentTransactions = [
+const todaysProduction = [
   {
-    time: "09:15",
+    time: "09:30",
+    variant: "Floor Filter 50mm",
+    quantity: "42 Sq Meter",
+    line: "Line 1",
+  },
+  {
+    time: "11:10",
+    variant: "EEC 560 Ceiling Filter",
+    quantity: "28 NOS",
+    line: "Line 2",
+  },
+  {
+    time: "14:45",
+    variant: "Pocket Filter F7",
+    quantity: "18 NOS",
+    line: "Line 3",
+  },
+] as const;
+
+const recentActivity = [
+  {
+    time: "15:20",
     activity: "Raw material inward",
-    item: "Activated Carbon Granules",
-    quantity: "+80 Kg",
+    reference: "INW-20260501-04",
   },
   {
-    time: "11:30",
-    activity: "Production logged",
-    item: "Floor Filter 50mm",
-    quantity: "+18 Sq Meter",
+    time: "14:45",
+    activity: "Production posted",
+    reference: "PROD-20260501-03",
   },
   {
-    time: "14:05",
-    activity: "Dispatch staged",
-    item: "Panel Pre Filter G4",
-    quantity: "-24 NOS",
+    time: "13:05",
+    activity: "Stock check completed",
+    reference: "Factory Store",
   },
-];
+] as const;
 
 export function FactoryDashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
         title="Factory Dashboard"
-        description="Today’s stock actions, production, and material alerts."
+        description="Action-first view for raw material receipt, production posting, and stock attention."
       />
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <KpiCard
-          title="Today’s Production"
-          value="186"
-          unit="Sq M"
-          subtitle="Across 5 filter lines"
-          icon={<Factory className="size-4" aria-hidden="true" />}
-        />
-        <KpiCard
-          title="Raw Material"
-          value="428"
-          unit="Units"
-          subtitle="Available across active stores"
-          icon={<Warehouse className="size-4" aria-hidden="true" />}
-        />
-        <KpiCard
-          title="Finished Goods Stock"
-          value="1,248"
-          unit="Units"
-          subtitle="Ready or packed"
-          icon={<PackageCheck className="size-4" aria-hidden="true" />}
-        />
-        <KpiCard
-          title="Low Stock Count"
-          value="3"
-          unit="Items"
-          subtitle="Needs immediate review"
-          trend={{ label: "2 urgent", direction: "down" }}
-          icon={<PackagePlus className="size-4" aria-hidden="true" />}
-        />
-      </section>
+      <section className="grid gap-4 xl:grid-cols-3">
+        {actionCards.map((card) => {
+          const Icon = card.icon;
 
-      <section className="grid gap-4 xl:grid-cols-[360px_1fr]">
-        <DataTableShell title="Quick Actions" description="Common factory entries">
-          <div className="grid gap-3 p-4 sm:grid-cols-2">
-            <ActionButton
-              icon={PackagePlus}
-              label="Add raw material"
-              description="Record store inward"
-              href="/inventory/inward"
-            />
-            <ActionButton
-              icon={Factory}
-              label="Log production"
-              description="Consume input and add output"
-              href="/production/new"
-            />
-            <ActionButton
-              icon={Truck}
-              label="Dispatch goods"
-              description="Move finished stock out"
-              href="/transactions"
-              variant="outline"
-            />
-            <ActionButton
-              icon={Warehouse}
-              label="View stock"
-              description="Check variant stock by location"
-              href="/inventory"
-              variant="outline"
-            />
-          </div>
-        </DataTableShell>
-
-        <DataTableShell
-          title="Low Stock Alerts"
-          description="Variant-level stock requiring action"
-          actions={
+          return (
             <Link
-              className={cn(buttonVariants({ variant: "outline" }))}
-              href="/inventory"
+              className="rounded-xl bg-white p-5 shadow-sm transition hover:shadow-md"
+              href={card.href}
+              key={card.title}
             >
-              View stock
+              <div className="flex items-center gap-4">
+                <div
+                  className={cn(
+                    "flex size-12 shrink-0 items-center justify-center rounded-xl",
+                    card.iconClassName
+                  )}
+                >
+                  <Icon className="size-5" aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-base font-semibold text-slate-900">
+                    {card.title}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    {card.description}
+                  </p>
+                </div>
+              </div>
             </Link>
-          }
-        >
-          <div className="grid gap-4 p-4 lg:grid-cols-2">
-            <div className="rounded-xl border border-red-200 bg-red-50/60 p-4">
-              <p className="text-sm font-semibold text-red-800">Low stock</p>
-              <div className="mt-3 space-y-3">
-                {lowStockAlerts
-                  .filter((alert) => alert.status === "low")
-                  .map((alert) => (
-                    <div
-                      className="rounded-lg border border-red-200 bg-card p-3"
-                      key={`${alert.item}-${alert.location}`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{alert.item}</p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {alert.location}
-                          </p>
-                        </div>
-                        <StatusBadge status="low" />
-                      </div>
-                      <p className="mt-2 text-sm text-red-800">{alert.available} available</p>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4">
-              <p className="text-sm font-semibold text-amber-800">Reorder soon</p>
-              <div className="mt-3 space-y-3">
-                {lowStockAlerts
-                  .filter((alert) => alert.status === "reorder")
-                  .map((alert) => (
-                    <div
-                      className="rounded-lg border border-amber-200 bg-card p-3"
-                      key={`${alert.item}-${alert.location}`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{alert.item}</p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {alert.location}
-                          </p>
-                        </div>
-                        <StatusBadge status="reorder" />
-                      </div>
-                      <p className="mt-2 text-sm text-amber-800">{alert.available} available</p>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </div>
-        </DataTableShell>
+          );
+        })}
       </section>
 
-      <DataTableShell title="Recent Transactions" description="Latest factory stock activity">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Time</TableHead>
-              <TableHead>Activity</TableHead>
-              <TableHead>Variant</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {recentTransactions.map((transaction) => (
-              <TableRow key={`${transaction.time}-${transaction.item}`}>
-                <TableCell>{transaction.time}</TableCell>
-                <TableCell>{transaction.activity}</TableCell>
-                <TableCell className="font-medium">{transaction.item}</TableCell>
-                <TableCell>{transaction.quantity}</TableCell>
-                <TableCell>
-                  <StatusBadge
-                    status={
-                      transaction.quantity.startsWith("-") ? "reorder" : "normal"
-                    }
-                  >
-                    {transaction.quantity.startsWith("-") ? "Issued" : "Posted"}
-                  </StatusBadge>
-                </TableCell>
-              </TableRow>
+      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <Card>
+          <CardHeader className="border-b pb-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <CardTitle>Raw Material Alerts</CardTitle>
+                <p className="mt-1 text-sm text-slate-600">
+                  Focus on items that can block production today.
+                </p>
+              </div>
+              <Link
+                className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
+                href="/inventory?type=RAW_MATERIAL"
+              >
+                View all inventory
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3 pt-5">
+            {rawMaterialAlerts.map((alert) => (
+              <div
+                className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3 last:border-0 last:pb-0"
+                key={`${alert.item}-${alert.location}`}
+              >
+                <div className="flex min-w-0 items-start gap-3">
+                  <span
+                    className={cn(
+                      "mt-2 size-2.5 shrink-0 rounded-full",
+                      alert.priority === "low" ? "bg-red-500" : "bg-amber-500"
+                    )}
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-slate-900">
+                      {alert.item}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500">{alert.location}</p>
+                  </div>
+                </div>
+                <p className="shrink-0 text-sm font-semibold text-slate-900">
+                  {alert.available}
+                </p>
+              </div>
             ))}
-          </TableBody>
-        </Table>
-      </DataTableShell>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="border-b pb-4">
+            <CardTitle>Recent Floor Activity</CardTitle>
+            <p className="mt-1 text-sm text-slate-600">
+              Latest operational events posted from store and production.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3 pt-5">
+            {recentActivity.map((row) => (
+              <div
+                className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3 last:border-0 last:pb-0"
+                key={`${row.time}-${row.reference}`}
+              >
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">{row.activity}</p>
+                  <p className="mt-1 text-sm text-slate-500">{row.reference}</p>
+                </div>
+                <p className="text-sm font-medium text-slate-600">{row.time}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </section>
+
+      <Card>
+        <CardHeader className="border-b pb-4">
+          <CardTitle>Today&apos;s Production</CardTitle>
+          <p className="mt-1 text-sm text-slate-600">
+            Compact view of finished output posted during the current shift.
+          </p>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Time</TableHead>
+                <TableHead>Variant</TableHead>
+                <TableHead>Line</TableHead>
+                <TableHead className="text-right">Quantity</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {todaysProduction.map((row) => (
+                <TableRow key={`${row.time}-${row.variant}`}>
+                  <TableCell>{row.time}</TableCell>
+                  <TableCell className="font-medium text-slate-900">
+                    {row.variant}
+                  </TableCell>
+                  <TableCell>{row.line}</TableCell>
+                  <TableCell className="text-right font-semibold tabular-nums text-slate-900">
+                    {row.quantity}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
