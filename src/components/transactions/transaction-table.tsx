@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { DataTableShell } from "@/components/ui/data-table-shell";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
@@ -40,19 +41,37 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
           {transactions.length > 0 ? (
             transactions.map((transaction) => (
               <TableRow key={transaction.id}>
-                <TableCell>{transaction.dateTime}</TableCell>
-                <TableCell className="font-medium">{transaction.type}</TableCell>
-                <TableCell className="font-medium">{transaction.product}</TableCell>
-                <TableCell>{transaction.variant}</TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <p className="font-medium text-foreground">{transaction.dateTime}</p>
+                    <p className="text-xs text-muted-foreground">{transaction.reference}</p>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline">{transaction.type}</Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <p className="font-medium text-foreground">{transaction.product}</p>
+                    <p className="text-xs text-muted-foreground">{transaction.variant}</p>
+                  </div>
+                </TableCell>
+                <TableCell className="text-muted-foreground">{transaction.variant}</TableCell>
                 <TableCell className="font-semibold tabular-nums">
                   {transaction.quantity}
                 </TableCell>
                 <TableCell>{transaction.unit}</TableCell>
-                <TableCell>{transaction.source}</TableCell>
-                <TableCell>{transaction.destination}</TableCell>
+                <TableCell className="text-muted-foreground">{transaction.source}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {transaction.destination}
+                </TableCell>
                 <TableCell>{transaction.user}</TableCell>
-                <TableCell>{transaction.reference}</TableCell>
-                <TableCell>{transaction.remarks}</TableCell>
+                <TableCell className="font-medium text-foreground">
+                  {transaction.reference}
+                </TableCell>
+                <TableCell className="max-w-64 whitespace-normal text-sm leading-5 text-muted-foreground">
+                  {transaction.remarks || "No remarks"}
+                </TableCell>
               </TableRow>
             ))
           ) : (

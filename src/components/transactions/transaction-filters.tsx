@@ -36,9 +36,15 @@ export function TransactionFilters({
   return (
     <Card>
       <CardContent className="p-4">
+        <div className="mb-4 flex flex-col gap-1">
+          <p className="text-sm font-semibold text-foreground">Filter transaction log</p>
+          <p className="text-sm text-muted-foreground">
+            Narrow by movement type, product, date, or user before exporting.
+          </p>
+        </div>
         <form
           action="/transactions"
-          className="grid gap-3 lg:grid-cols-[1fr_180px_220px_150px_150px_180px_auto_auto]"
+          className="grid gap-3 lg:grid-cols-[1.2fr_180px_220px_150px_150px_180px_auto_auto_auto]"
         >
           <div className="relative">
             <Search
@@ -53,54 +59,87 @@ export function TransactionFilters({
             />
           </div>
 
-          <select
-            className="h-9 rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-            defaultValue={filters.type ?? "all"}
-            name="type"
-          >
-            <option value="all">All types</option>
-            {transactionTypeOptions.map((type) => (
-              <option key={type} value={type}>
-                {type.replaceAll("_", " ")}
-              </option>
-            ))}
-          </select>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Type
+            </label>
+            <select
+              className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+              defaultValue={filters.type ?? "all"}
+              name="type"
+            >
+              <option value="all">All types</option>
+              {transactionTypeOptions.map((type) => (
+                <option key={type} value={type}>
+                  {type.replaceAll("_", " ")}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <select
-            className="h-9 rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-            defaultValue={filters.productId}
-            name="productId"
-          >
-            <option value="">All products</option>
-            {products.map((product) => (
-              <option key={product.id} value={product.id}>
-                {product.name}
-              </option>
-            ))}
-          </select>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Product
+            </label>
+            <select
+              className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+              defaultValue={filters.productId}
+              name="productId"
+            >
+              <option value="">All products</option>
+              {products.map((product) => (
+                <option key={product.id} value={product.id}>
+                  {product.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <Input defaultValue={filters.dateFrom} name="dateFrom" type="date" />
-          <Input defaultValue={filters.dateTo} name="dateTo" type="date" />
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              From
+            </label>
+            <Input defaultValue={filters.dateFrom} name="dateFrom" type="date" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              To
+            </label>
+            <Input defaultValue={filters.dateTo} name="dateTo" type="date" />
+          </div>
 
-          <select
-            className="h-9 rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-            defaultValue={filters.userId}
-            name="userId"
-          >
-            {users.map((user) => (
-              <option key={user.id || "all"} value={user.id}>
-                {user.label}
-              </option>
-            ))}
-          </select>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              User
+            </label>
+            <select
+              className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+              defaultValue={filters.userId}
+              name="userId"
+            >
+              {users.map((user) => (
+                <option key={user.id || "all"} value={user.id}>
+                  {user.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <Button type="submit">Filter</Button>
+          <Button className="self-end" type="submit">
+            Filter
+          </Button>
           <Link
-            className={cn(buttonVariants({ variant: "outline" }))}
+            className={cn(buttonVariants({ variant: "outline" }), "self-end")}
             href={`/api/reports/transactions?${exportParams.toString()}`}
           >
             <Download className="size-4" aria-hidden="true" />
             Export
+          </Link>
+          <Link
+            className={cn(buttonVariants({ variant: "outline" }), "self-end")}
+            href="/transactions"
+          >
+            Reset
           </Link>
         </form>
       </CardContent>
