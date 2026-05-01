@@ -56,7 +56,7 @@ export default async function FactoryPanelPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           Use these actions for shop-floor work. Each entry updates stock through the proper server-side flow.
         </p>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {actions.map((action) => (
             <ActionButton
               className="h-28 items-start text-left"
@@ -70,7 +70,7 @@ export default async function FactoryPanelPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-[1.2fr_0.8fr]">
         <Card>
           <CardContent className="space-y-4 p-5">
             <div>
@@ -79,7 +79,7 @@ export default async function FactoryPanelPage() {
                 Post only physical stock movement. Use adjustments only for corrections, not normal flow.
               </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="rounded-lg border bg-background p-3">
                 <p className="text-sm font-medium text-foreground">Raw material inward</p>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">

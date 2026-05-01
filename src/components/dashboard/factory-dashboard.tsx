@@ -112,7 +112,7 @@ export function FactoryDashboard() {
         description="Action-first view for raw material receipt, production posting, and stock attention."
       />
 
-      <section className="grid gap-4 xl:grid-cols-3">
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {actionCards.map((card) => {
           const Icon = card.icon;
 
@@ -145,7 +145,7 @@ export function FactoryDashboard() {
         })}
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
           <CardHeader className="border-b pb-4">
             <div className="flex items-center justify-between gap-3">

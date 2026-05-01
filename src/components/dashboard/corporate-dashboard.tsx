@@ -90,7 +90,7 @@ export function CorporateDashboard() {
         description="Stock, production, and consumption visibility without factory entry workflows."
       />
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title="Total Raw Material"
           value="4,860"
@@ -122,7 +122,7 @@ export function CorporateDashboard() {
         />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1.3fr_0.9fr]">
         <DataTableShell
           title="Stock Overview"
           description="Category-level inventory position"
@@ -175,7 +175,7 @@ export function CorporateDashboard() {
         </DataTableShell>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <DataTableShell
           title="Top Consumed Materials"
           description="Current month consumption"
@@ -229,7 +229,7 @@ export function CorporateDashboard() {
         title="Monthly Production and Consumption Insights"
         description="Compact management indicators"
       >
-        <div className="grid gap-4 p-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-lg border p-3">
             <BarChart3 className="size-4 text-muted-foreground" aria-hidden="true" />
             <p className="mt-3 text-sm font-medium">Paint booth demand is steady</p>

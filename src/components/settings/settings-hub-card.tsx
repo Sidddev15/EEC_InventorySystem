@@ -34,7 +34,7 @@ export function SettingsHubCard({
             <p className="mt-1 text-sm leading-5 text-muted-foreground">{description}</p>
           </div>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-3">
+        <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="rounded-lg border bg-background p-3">
             <p className="text-xs font-medium uppercase text-muted-foreground">Total</p>
             <p className="mt-2 text-2xl font-bold text-foreground">{total}</p>

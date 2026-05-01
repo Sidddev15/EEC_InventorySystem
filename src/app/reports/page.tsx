@@ -57,7 +57,7 @@ export default async function ReportsPage() {
         </p>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {reports.map((report) => (
           <Card key={report.href}>
             <CardHeader>

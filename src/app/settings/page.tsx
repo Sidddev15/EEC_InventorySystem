@@ -1,4 +1,4 @@
-import { Boxes, MapPinned, Tags } from "lucide-react";
+import { Boxes, MapPinned, Tags, Users } from "lucide-react";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { SettingsHubCard } from "@/components/settings/settings-hub-card";
@@ -26,7 +26,7 @@ export default async function SettingsPage() {
         description="Master data used by products, variants, inventory, and production. Keep these lists controlled and stable."
       />
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title="Categories"
           value={String(overview.categoriesCount)}
@@ -47,9 +47,14 @@ export default async function SettingsPage() {
           value={String(overview.stockLocationsCount)}
           subtitle="Locations that hold inventory"
         />
+        <KpiCard
+          title="Users"
+          value={String(overview.usersCount)}
+          subtitle="Employee login accounts"
+        />
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <SettingsHubCard
           title={sections[0].title}
           description={sections[0].description}
@@ -72,6 +77,14 @@ export default async function SettingsPage() {
           href={sections[2].href}
           total={sections[2].total}
           active={sections[2].active}
+          icon={Users}
+        />
+        <SettingsHubCard
+          title={sections[3].title}
+          description={sections[3].description}
+          href={sections[3].href}
+          total={sections[3].total}
+          active={sections[3].active}
           icon={MapPinned}
         />
       </section>
