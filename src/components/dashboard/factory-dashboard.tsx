@@ -106,7 +106,7 @@ export function FactoryDashboard() {
 
       <section className="grid gap-4 xl:grid-cols-[360px_1fr]">
         <DataTableShell title="Quick Actions" description="Common factory entries">
-          <div className="grid gap-3 p-4">
+          <div className="grid gap-3 p-4 sm:grid-cols-2">
             <ActionButton
               icon={PackagePlus}
               label="Add raw material"

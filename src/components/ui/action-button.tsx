@@ -26,7 +26,7 @@ export function ActionButton({
       <span className="min-w-0">
         <span className="block text-sm font-semibold leading-5">{label}</span>
         {description ? (
-          <span className="block text-xs font-normal leading-5 opacity-80">
+          <span className="mt-1 block text-xs font-normal leading-4 opacity-80">
             {description}
           </span>
         ) : null}
@@ -39,7 +39,7 @@ export function ActionButton({
       <Link
         className={cn(
           buttonVariants({ variant }),
-          "h-auto min-h-14 justify-start gap-3 px-4 py-3 text-left",
+          "h-24 flex-col justify-center gap-2 px-4 py-4 text-center",
           className
         )}
         href={href}
@@ -52,7 +52,7 @@ export function ActionButton({
   return (
     <Button
       className={cn(
-        "h-auto min-h-14 justify-start gap-3 px-4 py-3 text-left",
+        "h-24 flex-col justify-center gap-2 px-4 py-4 text-center",
         className
       )}
       variant={variant}
