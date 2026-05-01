@@ -13,8 +13,8 @@ type AppTopbarProps = {
 
 export function AppTopbar({ user }: AppTopbarProps) {
   return (
-    <header className="sticky top-0 z-20 border-b bg-card">
-      <div className="flex h-14 items-center gap-2 px-3 sm:gap-3 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-20 border-b bg-card/95 backdrop-blur-sm">
+      <div className="flex h-14 items-center gap-2 px-4 sm:gap-3 sm:px-6">
         <div className="hidden min-w-0 flex-1 sm:block">
           <form className="relative max-w-md" action="/products">
             <Search
@@ -40,7 +40,7 @@ export function AppTopbar({ user }: AppTopbarProps) {
         </Link>
 
         <div className="hidden border-l pl-3 text-right sm:block">
-          <p className="text-sm font-medium leading-5">{user.name}</p>
+          <p className="text-sm font-medium leading-5 text-foreground">{user.name}</p>
           <p className="text-xs text-muted-foreground">{ROLE_LABELS[user.role]}</p>
         </div>
 
