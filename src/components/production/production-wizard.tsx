@@ -60,6 +60,7 @@ export function ProductionWizard({
   const [productionQuantity, setProductionQuantity] = useState("");
   const [referenceNo, setReferenceNo] = useState("");
   const [notes, setNotes] = useState("");
+  const [hasConfirmed, setHasConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [consumptions, setConsumptions] = useState<ConsumptionLine[]>([
@@ -123,6 +124,7 @@ export function ProductionWizard({
   }, [consumptionItems, consumptions, outputItem, producedQuantity]);
 
   function addConsumptionLine() {
+    setHasConfirmed(false);
     setConsumptions((current) => [
       ...current,
       { key: crypto.randomUUID(), inventoryItemId: "", quantity: "" },
@@ -134,6 +136,7 @@ export function ProductionWizard({
     field: "inventoryItemId" | "quantity",
     value: string
   ) {
+    setHasConfirmed(false);
     setConsumptions((current) =>
       current.map((line) =>
         line.key === key ? { ...line, [field]: value } : line
@@ -142,6 +145,7 @@ export function ProductionWizard({
   }
 
   function removeConsumptionLine(key: string) {
+    setHasConfirmed(false);
     setConsumptions((current) =>
       current.length === 1 ? current : current.filter((line) => line.key !== key)
     );
@@ -150,6 +154,12 @@ export function ProductionWizard({
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    if (!hasConfirmed) {
+      setError("Confirm the before and after stock preview before posting production.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     const response = await fetch("/api/production", {
@@ -216,7 +226,10 @@ export function ProductionWizard({
             name="outputItemId"
             required
             value={outputItemId}
-            onChange={(event) => setOutputItemId(event.target.value)}
+            onChange={(event) => {
+              setOutputItemId(event.target.value);
+              setHasConfirmed(false);
+            }}
           >
             <option value="">Select finished or semi-finished variant</option>
             {outputItems.map((item) => (
@@ -280,7 +293,10 @@ export function ProductionWizard({
             inputMode="decimal"
             required
             value={productionQuantity}
-            onChange={(event) => setProductionQuantity(event.target.value)}
+            onChange={(event) => {
+              setProductionQuantity(event.target.value);
+              setHasConfirmed(false);
+            }}
             placeholder="Quantity produced"
           />
           <p className="text-xs leading-5 text-muted-foreground">
@@ -426,7 +442,10 @@ export function ProductionWizard({
             <Input
               id="referenceNo"
               value={referenceNo}
-              onChange={(event) => setReferenceNo(event.target.value)}
+              onChange={(event) => {
+                setReferenceNo(event.target.value);
+                setHasConfirmed(false);
+              }}
               placeholder="Optional batch or job number"
             />
           </div>
@@ -437,7 +456,10 @@ export function ProductionWizard({
             <Input
               id="notes"
               value={notes}
-              onChange={(event) => setNotes(event.target.value)}
+              onChange={(event) => {
+                setNotes(event.target.value);
+                setHasConfirmed(false);
+              }}
               placeholder="Optional production note"
             />
           </div>
@@ -479,6 +501,51 @@ export function ProductionWizard({
           />
         </section>
 
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-xl border bg-background p-4">
+            <p className="text-sm font-semibold text-foreground">Before posting</p>
+            <dl className="mt-3 space-y-3 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-muted-foreground">Output stock</dt>
+                <dd className="font-semibold text-foreground">
+                  {outputItem
+                    ? formatQuantity(outputItem.currentStock, outputItem.unit)
+                    : "Select output"}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-muted-foreground">Consumption lines</dt>
+                <dd className="font-semibold text-foreground">
+                  {selectedConsumptionCount}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="rounded-xl border bg-background p-4">
+            <p className="text-sm font-semibold text-foreground">After posting</p>
+            <dl className="mt-3 space-y-3 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-muted-foreground">Output stock</dt>
+                <dd className="font-semibold text-foreground">
+                  {outputItem
+                    ? formatQuantity(
+                        outputItem.currentStock + producedQuantity,
+                        outputItem.unit
+                      )
+                    : "Preview"}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-muted-foreground">Stock movements</dt>
+                <dd className="font-semibold text-foreground">
+                  {selectedConsumptionCount + 1}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
         <DataTableShell
           title="Before and After Stock Preview"
           description="Raw material decreases and finished stock increases only after confirmation."
@@ -517,6 +584,17 @@ export function ProductionWizard({
             </TableBody>
           </Table>
         </DataTableShell>
+
+        <label className="flex items-start gap-2 rounded-lg border bg-background p-3 text-sm font-medium text-foreground">
+          <input
+            className="mt-0.5 size-4 rounded border-input"
+            checked={hasConfirmed}
+            type="checkbox"
+            onChange={(event) => setHasConfirmed(event.target.checked)}
+          />
+          I have checked the before and after stock preview and confirmed the
+          production quantity and consumed materials.
+        </label>
       </div>
 
       <div className="flex justify-end gap-3">
@@ -544,7 +622,7 @@ export function ProductionWizard({
             Next
           </Button>
         ) : (
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting || !hasConfirmed}>
             {isSubmitting ? "Posting" : "Confirm Production"}
           </Button>
         )}
