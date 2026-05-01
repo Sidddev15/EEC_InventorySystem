@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { InlineAiSuggestion } from "@/components/ai/inline-ai-suggestion";
 import { Button } from "@/components/ui/button";
 
 type ReorderInsightButtonProps = {
@@ -49,9 +50,9 @@ export function ReorderInsightButton({
         {isLoading ? "Checking" : "AI insight"}
       </Button>
       {insight ? (
-        <p className="max-w-xs whitespace-normal text-xs text-muted-foreground">
-          {insight}
-        </p>
+        <div className="max-w-xs">
+          <InlineAiSuggestion title="Reorder insight" message={insight} />
+        </div>
       ) : null}
     </div>
   );

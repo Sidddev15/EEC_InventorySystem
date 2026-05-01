@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { InlineAiSuggestion } from "@/components/ai/inline-ai-suggestion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -365,56 +366,76 @@ export function VariantWizard({
       </div>
 
       <div className={stepIndex === 3 ? "grid gap-4 md:grid-cols-2" : "hidden"}>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium" htmlFor="unitId">
-            Default Unit
-          </label>
-          <select
-            className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-            id="unitId"
-            name="unitId"
-            required
-            value={unitId}
-            onChange={(event) => {
-              setUnitId(event.target.value);
-              setHasConfirmed(false);
-            }}
-          >
-            <option value="">Select unit</option>
-            {units.map((unit) => (
-              <option key={unit.id} value={unit.id}>
-                {unit.code} - {unit.name}
-              </option>
-            ))}
-          </select>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Button type="button" variant="outline" onClick={suggestUnit}>
-              Suggest unit
-            </Button>
-            <Button type="button" variant="outline" onClick={reviewMissingFields}>
-              Review missing fields
-            </Button>
+        <div className="space-y-4 rounded-xl border bg-background p-4">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="unitId">
+              Default Unit
+            </label>
+            <select
+              className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+              id="unitId"
+              name="unitId"
+              required
+              value={unitId}
+              onChange={(event) => {
+                setUnitId(event.target.value);
+                setHasConfirmed(false);
+              }}
+            >
+              <option value="">Select unit</option>
+              {units.map((unit) => (
+                <option key={unit.id} value={unit.id}>
+                  {unit.code} - {unit.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="rounded-lg border bg-card p-3">
+            <p className="text-sm font-semibold text-foreground">AI helpers</p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              Use AI only to reduce naming and unit mistakes. Final control stays with the user.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button type="button" variant="outline" onClick={suggestUnit}>
+                Suggest unit
+              </Button>
+              <Button type="button" variant="outline" onClick={reviewMissingFields}>
+                Review missing fields
+              </Button>
+            </div>
           </div>
         </div>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium" htmlFor="inventoryType">
-            Inventory Type
-          </label>
-          <select
-            className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
-            id="inventoryType"
-            name="inventoryType"
-            required
-            value={inventoryType}
-            onChange={(event) => {
-              setInventoryType(event.target.value);
-              setHasConfirmed(false);
-            }}
-          >
-            <option value="RAW_MATERIAL">Raw Material</option>
-            <option value="SEMI_FINISHED">Semi-Finished</option>
-            <option value="FINISHED_GOODS">Finished Goods</option>
-          </select>
+        <div className="space-y-4 rounded-xl border bg-background p-4">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" htmlFor="inventoryType">
+              Inventory Type
+            </label>
+            <select
+              className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20"
+              id="inventoryType"
+              name="inventoryType"
+              required
+              value={inventoryType}
+              onChange={(event) => {
+                setInventoryType(event.target.value);
+                setHasConfirmed(false);
+              }}
+            >
+              <option value="RAW_MATERIAL">Raw Material</option>
+              <option value="SEMI_FINISHED">Semi-Finished</option>
+              <option value="FINISHED_GOODS">Finished Goods</option>
+            </select>
+          </div>
+
+          <div className="rounded-lg border bg-card p-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Current unit
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {selectedUnit ? `${selectedUnit.code} - ${selectedUnit.name}` : "Not selected"}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -484,9 +505,7 @@ export function VariantWizard({
       </div>
 
       {aiSuggestion ? (
-        <p className="rounded-xl border bg-background p-3 text-sm font-medium text-foreground">
-          {aiSuggestion}
-        </p>
+        <InlineAiSuggestion message={aiSuggestion} />
       ) : null}
 
       {error ? <p className="text-sm font-medium text-destructive">{error}</p> : null}

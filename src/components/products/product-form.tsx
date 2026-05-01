@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { InlineAiSuggestion } from "@/components/ai/inline-ai-suggestion";
 import { Button } from "@/components/ui/button";
 import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
@@ -169,7 +170,9 @@ export function ProductForm({ categories }: ProductFormProps) {
           </Button>
         </div>
         {aiSuggestion ? (
-          <p className="mt-3 text-sm font-medium text-foreground">{aiSuggestion}</p>
+          <div className="mt-3">
+            <InlineAiSuggestion title="Duplicate name check" message={aiSuggestion} />
+          </div>
         ) : null}
       </div>
 
