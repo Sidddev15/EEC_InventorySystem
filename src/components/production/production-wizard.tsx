@@ -205,13 +205,13 @@ export function ProductionWizard({
 
   return (
     <form className="space-y-5" onSubmit={onSubmit}>
-      <ol className="grid gap-2 lg:grid-cols-4">
+      <ol className="flex flex-col gap-2 md:grid md:grid-cols-2 lg:grid-cols-4">
         {steps.map((step, index) => (
           <li
             className={
               index === stepIndex
-                ? "rounded-lg border border-primary bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"
-                : "rounded-lg border bg-background px-3 py-2 text-xs font-medium text-muted-foreground"
+                ? "rounded-lg border border-primary bg-primary px-3 py-3 text-sm font-medium text-primary-foreground"
+                : "rounded-lg border bg-background px-3 py-3 text-sm font-medium text-muted-foreground"
             }
             key={step}
           >
@@ -424,7 +424,7 @@ export function ProductionWizard({
             </div>
             <div className="flex items-end">
               <Button
-                className="w-full"
+                className="h-11 w-full"
                 type="button"
                 variant="outline"
                 onClick={() => removeConsumptionLine(line.key)}
@@ -434,7 +434,7 @@ export function ProductionWizard({
             </div>
           </div>
         ))}
-        <Button type="button" variant="outline" onClick={addConsumptionLine}>
+        <Button className="h-11 w-full sm:w-auto" type="button" variant="outline" onClick={addConsumptionLine}>
           Add Material
         </Button>
         <p className="text-xs leading-5 text-muted-foreground">
@@ -459,7 +459,7 @@ export function ProductionWizard({
               placeholder="Optional batch or job number"
             />
           </div>
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="notes">
               Notes
             </label>
@@ -475,7 +475,7 @@ export function ProductionWizard({
           </div>
         </div>
 
-        <section className="grid gap-4 md:grid-cols-3">
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <KpiCard
             title="Output Before"
             value={
@@ -511,7 +511,7 @@ export function ProductionWizard({
           />
         </section>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <div className="rounded-xl border bg-background p-4">
             <p className="text-sm font-semibold text-foreground">Before posting</p>
             <dl className="mt-3 space-y-3 text-sm">
@@ -607,35 +607,36 @@ export function ProductionWizard({
         </label>
       </div>
 
-      <div className="flex justify-end gap-3">
-        {error ? (
-          <div className="mr-auto">
-            <FormMessage tone="error">{error}</FormMessage>
-          </div>
-        ) : null}
-        <Button
-          type="button"
-          variant="outline"
-          disabled={stepIndex === 0}
-          onClick={() => setStepIndex((current) => Math.max(current - 1, 0))}
-        >
-          Back
-        </Button>
-        {stepIndex < steps.length - 1 ? (
+      {error ? <FormMessage tone="error">{error}</FormMessage> : null}
+
+      <div className="sticky bottom-20 z-20 -mx-4 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-sm md:static md:mx-0 md:border-0 md:bg-transparent md:px-0 md:py-0">
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
           <Button
+            className="h-11 w-full sm:w-auto"
             type="button"
-            disabled={!canGoNext}
-            onClick={() =>
-              setStepIndex((current) => Math.min(current + 1, steps.length - 1))
-            }
+            variant="outline"
+            disabled={stepIndex === 0}
+            onClick={() => setStepIndex((current) => Math.max(current - 1, 0))}
           >
-            Next
+            Back
           </Button>
-        ) : (
-          <Button type="submit" disabled={isSubmitting || !hasConfirmed}>
-            {isSubmitting ? "Posting" : "Confirm Production"}
-          </Button>
-        )}
+          {stepIndex < steps.length - 1 ? (
+            <Button
+              className="h-12 w-full sm:w-auto"
+              type="button"
+              disabled={!canGoNext}
+              onClick={() =>
+                setStepIndex((current) => Math.min(current + 1, steps.length - 1))
+              }
+            >
+              Next
+            </Button>
+          ) : (
+            <Button className="h-12 w-full sm:w-auto" type="submit" disabled={isSubmitting || !hasConfirmed}>
+              {isSubmitting ? "Posting" : "Confirm Production"}
+            </Button>
+          )}
+        </div>
       </div>
     </form>
   );
