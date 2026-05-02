@@ -164,21 +164,42 @@ export async function suggestVariantName(input: unknown, userId?: string) {
     throw new Error("Parent product not found.");
   }
 
+  const draftName = data.draftName?.trim() ?? "";
+  const productTokens = new Set(
+    product.name
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean)
+  );
+  const draftTokens = new Set(
+    draftName
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean)
+  );
+  const hasProductReference = [...productTokens].some((token) => draftTokens.has(token));
   const parts = [
-    product.name,
+    hasProductReference ? draftName : [product.name, draftName].filter(Boolean).join(" "),
     data.thickness,
     data.gsm ? `${data.gsm} GSM` : "",
     data.material,
     data.size,
-  ].filter(Boolean);
+  ]
+    .filter(Boolean)
+    .map((value) => value?.trim())
+    .filter(Boolean);
   const fallback = parts.join(" ").replace(/\s+/g, " ").trim();
 
   return requestAiSuggestion({
     type: AiSuggestionType.VARIANT_NAMING,
     prompt: [
       `Suggest one clean EEC product variant name for parent product "${product.name}".`,
+      draftName
+        ? `The user has already typed this draft name: "${draftName}". Refine it instead of replacing it with a generic standard name.`
+        : "No draft variant name has been typed yet. Build the name from the supplied attributes.",
       `Attributes: thickness=${data.thickness || "n/a"}, gsm=${data.gsm || "n/a"}, material=${data.material || "n/a"}, size=${data.size || "n/a"}, inventoryType=${data.inventoryType || "n/a"}.`,
       `Existing variant names: ${product.variants.map((variant) => variant.name).join("; ") || "none"}.`,
+      "Use the user's wording when it is operationally meaningful. Avoid generic names like Standard unless the user explicitly asked for them.",
       "Return only the suggested variant name.",
     ].join(" "),
     context: {

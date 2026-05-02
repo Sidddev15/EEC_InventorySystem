@@ -3,13 +3,8 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { FormMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
-
-const demoUsers = [
-  "admin@eec.local / admin123",
-  "factory@eec.local / factory123",
-  "corporate@eec.local / corporate123",
-];
 
 export function LoginForm() {
   const router = useRouter();
@@ -57,7 +52,7 @@ export function LoginForm() {
           type="email"
           autoComplete="email"
           required
-          placeholder="admin@eec.local"
+          placeholder="name@company.com"
         />
       </div>
 
@@ -75,22 +70,15 @@ export function LoginForm() {
         />
       </div>
 
-      {error ? <p className="text-sm font-medium text-destructive">{error}</p> : null}
+      {error ? <FormMessage tone="error">{error}</FormMessage> : null}
 
       <Button className="w-full" size="lg" type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Signing in" : "Sign in"}
       </Button>
 
-      <div className="rounded-lg border bg-muted/40 p-3">
-        <p className="text-xs font-medium text-muted-foreground">
-          Foundation users
-        </p>
-        <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-          {demoUsers.map((user) => (
-            <p key={user}>{user}</p>
-          ))}
-        </div>
-      </div>
+      <FormMessage tone="info">
+        Use the employee email ID and password assigned by admin.
+      </FormMessage>
     </form>
   );
 }

@@ -25,6 +25,22 @@ const inventoryTypeLabels: Record<string, string> = {
   FINISHED_GOODS: "Finished Goods",
 };
 
+function getAttributePreview(input: {
+  thickness: string;
+  gsm: string;
+  material: string;
+  size: string;
+}) {
+  return [
+    input.thickness ? `Thickness ${input.thickness}` : "",
+    input.gsm ? `${input.gsm} GSM` : "",
+    input.material || "",
+    input.size || "",
+  ]
+    .filter(Boolean)
+    .join(" • ");
+}
+
 export function VariantWizard({
   products,
   units,
@@ -49,6 +65,8 @@ export function VariantWizard({
   );
   const selectedProduct = products.find((product) => product.id === productId);
   const selectedUnit = units.find((unit) => unit.id === unitId);
+  const attributePreview =
+    getAttributePreview({ thickness, gsm, material, size }) || "No attribute details added yet.";
 
   function goNext() {
     setStepIndex((current) => Math.min(current + 1, steps.length - 1));
@@ -69,6 +87,7 @@ export function VariantWizard({
       },
       body: JSON.stringify({
         productId,
+        draftName: variantName,
         thickness,
         gsm,
         material,
@@ -214,22 +233,29 @@ export function VariantWizard({
 
   return (
     <form className="space-y-5" onSubmit={onSubmit}>
-      <ol className="grid gap-2 md:grid-cols-5">
+      <ol className="grid grid-cols-2 gap-2 lg:grid-cols-5">
         {steps.map((step, index) => (
           <li
             className={
               index === stepIndex
-                ? "rounded-lg border border-primary bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"
-                : "rounded-lg border bg-background px-3 py-2 text-xs font-medium text-muted-foreground"
+                ? "rounded-xl border border-primary bg-primary px-3 py-3 text-sm font-semibold text-primary-foreground"
+                : "rounded-xl border border-border bg-background px-3 py-3 text-sm font-medium text-slate-500"
             }
             key={step}
           >
-            {index + 1}. {step}
+            <span className="block text-xs opacity-80">{index + 1}</span>
+            <span className="mt-1 block leading-5">{step}</span>
           </li>
         ))}
       </ol>
 
-      <div className={stepIndex === 0 ? "grid gap-4" : "hidden"}>
+      <div className={stepIndex === 0 ? "space-y-4" : "hidden"}>
+        <div className="rounded-xl border border-border bg-slate-50/60 p-4">
+          <p className="text-sm font-semibold text-slate-900">Select the parent product</p>
+          <p className="mt-1 text-sm text-slate-500">
+            Variants are created under a single parent product and drive inventory behavior later.
+          </p>
+        </div>
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium" htmlFor="productId">
             Parent Product
@@ -254,7 +280,13 @@ export function VariantWizard({
         </div>
       </div>
 
-      <div className={stepIndex === 1 ? "grid gap-4" : "hidden"}>
+      <div className={stepIndex === 1 ? "space-y-4" : "hidden"}>
+        <div className="rounded-xl border border-border bg-slate-50/60 p-4">
+          <p className="text-sm font-semibold text-slate-900">Set the operational variant name</p>
+          <p className="mt-1 text-sm text-slate-500">
+            Start with the shop-floor wording you actually use. The AI helper should refine it, not replace it.
+          </p>
+        </div>
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium" htmlFor="name">
             Variant Name
@@ -274,7 +306,13 @@ export function VariantWizard({
             <Button
               type="button"
               variant="outline"
-              disabled={!productId || isSuggestingName}
+              disabled={
+                !productId ||
+                isSuggestingName ||
+                ![variantName, thickness, gsm, material, size].some((value) =>
+                  value.trim()
+                )
+              }
               onClick={suggestName}
             >
               {isSuggestingName ? "Suggesting" : "Suggest variant name"}
@@ -283,90 +321,93 @@ export function VariantWizard({
         </div>
       </div>
 
-      <div className={stepIndex === 2 ? "grid grid-cols-1 gap-4 md:grid-cols-2" : "hidden"}>
-        <div className="flex flex-col gap-2 rounded-xl border bg-background p-4">
-          <label className="text-sm font-medium" htmlFor="thickness">
-            Thickness
-          </label>
-          <Input
-            id="thickness"
-            name="thickness"
-            placeholder="50mm"
-            value={thickness}
-            onChange={(event) => {
-              setThickness(event.target.value);
-              setHasConfirmed(false);
-            }}
-          />
-          <p className="text-xs leading-5 text-muted-foreground">
-            Use the operational thickness used on the shop floor and in dispatch communication.
+      <div className={stepIndex === 2 ? "space-y-4" : "hidden"}>
+        <div className="rounded-xl border border-border bg-slate-50/60 p-4">
+          <p className="text-sm font-semibold text-slate-900">Add production-facing attributes</p>
+          <p className="mt-1 text-sm text-slate-500">
+            Keep these short and operational. These values influence naming, unit selection, and searchability.
           </p>
         </div>
-        <div className="flex flex-col gap-2 rounded-xl border bg-background p-4">
-          <label className="text-sm font-medium" htmlFor="gsm">
-            GSM
-          </label>
-          <Input
-            id="gsm"
-            name="gsm"
-            inputMode="numeric"
-            placeholder="250"
-            value={gsm}
-            onChange={(event) => {
-              setGsm(event.target.value);
-              setHasConfirmed(false);
-            }}
-          />
-          <p className="text-xs leading-5 text-muted-foreground">
-            Keep GSM numeric so variants stay comparable and searchable later.
-          </p>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="space-y-2 rounded-xl border border-border bg-white p-4">
+            <label className="text-sm font-medium text-slate-900" htmlFor="thickness">
+              Thickness
+            </label>
+            <Input
+              id="thickness"
+              name="thickness"
+              placeholder="50mm"
+              value={thickness}
+              onChange={(event) => {
+                setThickness(event.target.value);
+                setHasConfirmed(false);
+              }}
+            />
+            <p className="text-xs leading-5 text-slate-500">Use the operational thickness used in production and dispatch.</p>
+          </div>
+
+          <div className="space-y-2 rounded-xl border border-border bg-white p-4">
+            <label className="text-sm font-medium text-slate-900" htmlFor="gsm">
+              GSM
+            </label>
+            <Input
+              id="gsm"
+              name="gsm"
+              inputMode="numeric"
+              placeholder="250"
+              value={gsm}
+              onChange={(event) => {
+                setGsm(event.target.value);
+                setHasConfirmed(false);
+              }}
+            />
+            <p className="text-xs leading-5 text-slate-500">Keep GSM numeric so variants stay comparable later.</p>
+          </div>
+
+          <div className="space-y-2 rounded-xl border border-border bg-white p-4">
+            <label className="text-sm font-medium text-slate-900" htmlFor="material">
+              Material
+            </label>
+            <Input
+              id="material"
+              name="material"
+              placeholder="Synthetic media"
+              value={material}
+              onChange={(event) => {
+                setMaterial(event.target.value);
+                setHasConfirmed(false);
+              }}
+            />
+            <p className="text-xs leading-5 text-slate-500">Enter the actual filter media or assembly material.</p>
+          </div>
+
+          <div className="space-y-2 rounded-xl border border-border bg-white p-4">
+            <label className="text-sm font-medium text-slate-900" htmlFor="size">
+              Size
+            </label>
+            <Input
+              id="size"
+              name="size"
+              placeholder="1m x 20m"
+              value={size}
+              onChange={(event) => {
+                setSize(event.target.value);
+                setHasConfirmed(false);
+              }}
+            />
+            <p className="text-xs leading-5 text-slate-500">Use one consistent dimensional format for stock records.</p>
+          </div>
         </div>
-        <div className="flex flex-col gap-2 rounded-xl border bg-background p-4">
-          <label className="text-sm font-medium" htmlFor="material">
-            Material
-          </label>
-          <Input
-            id="material"
-            name="material"
-            placeholder="Synthetic media"
-            value={material}
-            onChange={(event) => {
-              setMaterial(event.target.value);
-              setHasConfirmed(false);
-            }}
-          />
-          <p className="text-xs leading-5 text-muted-foreground">
-            Enter the actual filter media or assembly material used in stock handling.
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 rounded-xl border bg-background p-4">
-          <label className="text-sm font-medium" htmlFor="size">
-            Size
-          </label>
-          <Input
-            id="size"
-            name="size"
-            placeholder="1m x 20m"
-            value={size}
-            onChange={(event) => {
-              setSize(event.target.value);
-              setHasConfirmed(false);
-            }}
-          />
-          <p className="text-xs leading-5 text-muted-foreground">
-            Use a stable dimensional format. This affects naming quality and unit suggestions.
-          </p>
-        </div>
-        <div className="rounded-xl border bg-card p-4 md:col-span-2">
-          <p className="text-sm font-semibold text-foreground">Attribute preview</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {[thickness || "Thickness not set", gsm ? `${gsm} GSM` : "GSM not set", material || "Material not set", size || "Size not set"].join(" • ")}
-          </p>
+
+        <div className="rounded-xl border border-border bg-white p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Attribute preview</p>
+          <p className="mt-2 text-sm font-medium text-slate-900">{attributePreview}</p>
         </div>
       </div>
 
       <div className={stepIndex === 3 ? "grid grid-cols-1 gap-4 md:grid-cols-2" : "hidden"}>
-        <div className="space-y-4 rounded-xl border bg-background p-4">
+        <div className="space-y-4 rounded-xl border border-border bg-white p-4">
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="unitId">
               Default Unit
@@ -390,7 +431,7 @@ export function VariantWizard({
             />
           </div>
 
-          <div className="rounded-lg border bg-card p-3">
+          <div className="rounded-xl border border-border bg-slate-50/60 p-4">
             <p className="text-sm font-semibold text-foreground">AI helpers</p>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
               Use AI only to reduce naming and unit mistakes. Final control stays with the user.
@@ -405,7 +446,7 @@ export function VariantWizard({
             </div>
           </div>
         </div>
-        <div className="space-y-4 rounded-xl border bg-background p-4">
+        <div className="space-y-4 rounded-xl border border-border bg-white p-4">
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="inventoryType">
               Inventory Type
@@ -427,7 +468,7 @@ export function VariantWizard({
             />
           </div>
 
-          <div className="rounded-lg border bg-card p-3">
+          <div className="rounded-xl border border-border bg-slate-50/60 p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Current unit
             </p>
@@ -439,7 +480,7 @@ export function VariantWizard({
       </div>
 
       <div className={stepIndex === 4 ? "space-y-4" : "hidden"}>
-        <div className="rounded-xl border bg-card p-4">
+        <div className="rounded-xl border border-border bg-white p-4">
           <h3 className="text-sm font-semibold text-foreground">Review variant details</h3>
           <dl className="mt-3 grid gap-3 text-sm md:grid-cols-2">
             <div>
@@ -487,7 +528,7 @@ export function VariantWizard({
           Active
         </label>
 
-        <label className="flex items-start gap-2 rounded-lg border bg-background p-3 text-sm font-medium text-foreground">
+        <label className="flex items-start gap-2 rounded-xl border border-border bg-slate-50/60 p-3 text-sm font-medium text-foreground">
           <input
             className="mt-0.5 size-4 rounded border-input"
             checked={hasConfirmed}
@@ -509,7 +550,14 @@ export function VariantWizard({
 
       {error ? <p className="text-sm font-medium text-destructive">{error}</p> : null}
 
-      <div className="flex justify-end gap-3">
+      <div className="sticky bottom-0 -mx-4 border-t border-border bg-white/95 px-4 pt-4 backdrop-blur-sm md:-mx-5 md:px-5">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs text-slate-500">
+            {stepIndex === steps.length - 1
+              ? "Review carefully before creating the variant."
+              : `Step ${stepIndex + 1} of ${steps.length}`}
+          </p>
+          <div className="flex justify-end gap-3">
         <Button type="button" variant="outline" onClick={goBack} disabled={stepIndex === 0}>
           Back
         </Button>
@@ -522,6 +570,8 @@ export function VariantWizard({
             {isSubmitting ? "Creating" : "Create Variant"}
           </Button>
         )}
+          </div>
+        </div>
       </div>
     </form>
   );

@@ -36,9 +36,9 @@ export default async function InventoryPage({
         description="Browse stock by inventory type, variant, and location."
       />
 
-      <InventoryOverviewCards overview={overview} />
+      <InventoryOverviewCards items={items} overview={overview} />
       <InventoryTabs active={activeTab} summaries={overview.summaries} />
-      <InventoryStatusSummary counts={statusCounts} />
+      <InventoryStatusSummary counts={statusCounts} items={items} />
       <InventoryTable items={items} />
     </div>
   );

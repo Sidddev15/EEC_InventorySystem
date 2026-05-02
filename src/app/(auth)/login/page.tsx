@@ -18,6 +18,9 @@ export default async function LoginPage() {
             EEC Inventory System
           </p>
           <CardTitle>Sign in</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Sign in with the email and password created for your employee account.
+          </p>
         </CardHeader>
         <CardContent>
           <LoginForm />

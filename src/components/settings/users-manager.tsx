@@ -92,80 +92,98 @@ export function UsersManager({ initialItems, currentUserId }: UsersManagerProps)
     setError(null);
   }
 
+  async function readErrorMessage(response: Response, fallback: string) {
+    const contentType = response.headers.get("content-type") ?? "";
+
+    if (contentType.includes("application/json")) {
+      const data = (await response.json()) as { message?: string };
+      return data.message ?? fallback;
+    }
+
+    const text = await response.text();
+    return text.trim() || fallback;
+  }
+
   async function saveUser() {
     setError(null);
     setIsSubmitting(true);
 
-    const isEdit = Boolean(draft.id);
-    const response = await fetch(
-      isEdit ? `/api/settings/users/${draft.id}` : "/api/settings/users",
-      {
-        method: isEdit ? "PATCH" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: draft.name,
-          email: draft.email,
-          role: draft.role,
-          password: draft.password,
-          isActive: draft.isActive,
-        }),
-      }
-    );
-
-    setIsSubmitting(false);
-
-    if (!response.ok) {
-      const data = (await response.json()) as { message?: string };
-      setError(data.message ?? "Unable to save user.");
-      return;
-    }
-
-    const saved = (await response.json()) as ManagedUserListItem;
-
-    setItems((current) => {
-      const next = isEdit
-        ? current.map((item) => (item.id === saved.id ? saved : item))
-        : [saved, ...current];
-
-      return next.sort((left, right) =>
-        left.role.localeCompare(right.role) || left.name.localeCompare(right.name)
+    try {
+      const isEdit = Boolean(draft.id);
+      const response = await fetch(
+        isEdit ? `/api/settings/users/${draft.id}` : "/api/settings/users",
+        {
+          method: isEdit ? "PATCH" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: draft.name,
+            email: draft.email,
+            role: draft.role,
+            password: draft.password,
+            isActive: draft.isActive,
+          }),
+        }
       );
-    });
 
-    closeModal();
-    router.refresh();
+      if (!response.ok) {
+        setError(await readErrorMessage(response, "Unable to save user."));
+        return;
+      }
+
+      const saved = (await response.json()) as ManagedUserListItem;
+
+      setItems((current) => {
+        const next = isEdit
+          ? current.map((item) => (item.id === saved.id ? saved : item))
+          : [saved, ...current];
+
+        return next.sort((left, right) =>
+          left.role.localeCompare(right.role) || left.name.localeCompare(right.name)
+        );
+      });
+
+      closeModal();
+      router.refresh();
+    } catch {
+      setError("Unable to save user right now. Check the server response and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   async function toggleStatus(item: ManagedUserListItem) {
     setError(null);
 
-    const response = await fetch(`/api/settings/users/${item.id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: item.name,
-        email: item.email,
-        role: item.role,
-        password: "",
-        isActive: !item.isActive,
-      }),
-    });
+    try {
+      const response = await fetch(`/api/settings/users/${item.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: item.name,
+          email: item.email,
+          role: item.role,
+          password: "",
+          isActive: !item.isActive,
+        }),
+      });
 
-    if (!response.ok) {
-      const data = (await response.json()) as { message?: string };
-      setError(data.message ?? "Unable to update user status.");
-      return;
+      if (!response.ok) {
+        setError(await readErrorMessage(response, "Unable to update user status."));
+        return;
+      }
+
+      const saved = (await response.json()) as ManagedUserListItem;
+      setItems((current) =>
+        current.map((candidate) => (candidate.id === saved.id ? saved : candidate))
+      );
+      router.refresh();
+    } catch {
+      setError("Unable to update user status right now. Check the server response and try again.");
     }
-
-    const saved = (await response.json()) as ManagedUserListItem;
-    setItems((current) =>
-      current.map((candidate) => (candidate.id === saved.id ? saved : candidate))
-    );
-    router.refresh();
   }
 
   return (

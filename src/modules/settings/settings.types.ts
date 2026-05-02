@@ -3,6 +3,8 @@ export type SettingsOverview = {
   unitsCount: number;
   locationsCount: number;
   stockLocationsCount: number;
+  usersCount: number;
+  activeUsersCount: number;
   activeCategoriesCount: number;
   activeUnitsCount: number;
   activeLocationsCount: number;
@@ -44,4 +46,13 @@ export type SettingsHubSection = {
   href: string;
   total: number;
   active: number;
+};
+
+export type SettingsUserItem = {
+  id: string;
+  name: string;
+  email: string;
+  role: "ADMIN" | "FACTORY" | "CORPORATE";
+  isActive: boolean;
+  createdAt: string;
 };

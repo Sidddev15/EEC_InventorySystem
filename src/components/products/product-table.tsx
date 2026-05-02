@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { ProductDetailModal } from "@/components/products/product-detail-modal";
 import { buttonVariants } from "@/components/ui/button";
 import { DataTableShell } from "@/components/ui/data-table-shell";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -43,7 +46,12 @@ export function ProductTable({ products }: ProductTableProps) {
           {products.length > 0 ? (
             products.map((product) => (
               <TableRow key={product.id}>
-                <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <ProductDetailModal productId={product.id} triggerLabel={product.name} />
+                    <p className="text-xs text-slate-500">Click product name for full details</p>
+                  </div>
+                </TableCell>
                 <TableCell>{product.category}</TableCell>
                 <TableCell className="font-semibold tabular-nums">
                   {product.variantsCount}

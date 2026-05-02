@@ -20,12 +20,25 @@ export const productDuplicateCheckSchema = z.object({
 
 export const variantNameSuggestionSchema = z.object({
   productId: z.string().trim().min(1),
+  draftName: z.string().trim().max(140).optional().or(z.literal("")),
   thickness: z.string().trim().max(50).optional().or(z.literal("")),
   gsm: z.string().trim().max(20).optional().or(z.literal("")),
   material: z.string().trim().max(120).optional().or(z.literal("")),
   size: z.string().trim().max(120).optional().or(z.literal("")),
   inventoryType: z.string().trim().max(80).optional(),
-});
+}).refine(
+  (value) =>
+    Boolean(
+      value.draftName ||
+        value.thickness ||
+        value.gsm ||
+        value.material ||
+        value.size
+    ),
+  {
+    message: "Enter a draft name or at least one attribute before requesting an AI suggestion.",
+  }
+);
 
 export const unitSuggestionSchema = z.object({
   variantName: z.string().trim().max(140).optional().or(z.literal("")),

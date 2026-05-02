@@ -6,6 +6,7 @@ import {
   type ProductListFilters,
   type ProductListItem,
   type ProductOption,
+  type ProductSearchResult,
 } from "./product.types";
 
 function toSlug(value: string) {
@@ -122,6 +123,87 @@ export async function listProductOptions(): Promise<ProductOption[]> {
   }));
 }
 
+export async function searchProductsAndVariants(
+  query: string
+): Promise<ProductSearchResult[]> {
+  const search = query.trim();
+
+  if (!search) {
+    return [];
+  }
+
+  const [productMatches, variantMatches] = await Promise.all([
+    db.product.findMany({
+      where: {
+        isActive: true,
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+      orderBy: [{ category: { name: "asc" } }, { name: "asc" }],
+      take: 8,
+      select: {
+        id: true,
+        name: true,
+        category: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    }),
+    db.productVariant.findMany({
+      where: {
+        isActive: true,
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+        product: {
+          isActive: true,
+        },
+      },
+      orderBy: [{ product: { category: { name: "asc" } } }, { name: "asc" }],
+      take: 12,
+      select: {
+        id: true,
+        name: true,
+        product: {
+          select: {
+            id: true,
+            name: true,
+            category: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+  ]);
+
+  return [
+    ...productMatches.map((product) => ({
+      productId: product.id,
+      productName: product.name,
+      category: product.category.name,
+      variantId: null,
+      variantName: null,
+      matchType: "product" as const,
+    })),
+    ...variantMatches.map((variant) => ({
+      productId: variant.product.id,
+      productName: variant.product.name,
+      category: variant.product.category.name,
+      variantId: variant.id,
+      variantName: variant.name,
+      matchType: "variant" as const,
+    })),
+  ].slice(0, 12);
+}
+
 export async function getProductDetail(id: string): Promise<ProductDetail | null> {
   const product = await db.product.findUnique({
     where: { id },
@@ -140,6 +222,10 @@ export async function getProductDetail(id: string): Promise<ProductDetail | null
         select: {
           id: true,
           name: true,
+          thickness: true,
+          gsm: true,
+          material: true,
+          size: true,
           inventoryType: true,
           isActive: true,
           unit: {
@@ -162,11 +248,16 @@ export async function getProductDetail(id: string): Promise<ProductDetail | null
     category: product.category.name,
     description: product.description,
     isActive: product.isActive,
+    variantsCount: product.variants.length,
     variants: product.variants.map((variant) => ({
       id: variant.id,
       name: variant.name,
       unit: variant.unit.code,
       inventoryType: variant.inventoryType,
+      thickness: variant.thickness,
+      gsm: variant.gsm,
+      material: variant.material,
+      size: variant.size,
       isActive: variant.isActive,
     })),
   };

@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { type TransactionLogItem } from "@/modules/transaction/transaction.types";
 
 type TransactionTableProps = {
@@ -21,7 +22,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
       title="Transaction Log"
       description="Every inventory movement recorded through transaction, production, ledger, and audit paths."
     >
-      <Table>
+      <Table className="min-w-[1220px]">
         <TableHeader>
           <TableRow>
             <TableHead>Date & Time</TableHead>
@@ -33,7 +34,6 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
             <TableHead>Source</TableHead>
             <TableHead>Destination</TableHead>
             <TableHead>User</TableHead>
-            <TableHead>Reference</TableHead>
             <TableHead>Remarks</TableHead>
           </TableRow>
         </TableHeader>
@@ -44,20 +44,49 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                 <TableCell>
                   <div className="space-y-1">
                     <p className="font-medium text-foreground">{transaction.dateTime}</p>
-                    <p className="text-xs text-muted-foreground">{transaction.reference}</p>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      {transaction.reference}
+                    </p>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="outline">{transaction.type}</Badge>
+                  <Badge
+                    className={cn(
+                      transaction.rawType === "INWARD" &&
+                        "border-emerald-200 bg-emerald-50 text-emerald-700",
+                      transaction.rawType === "OUTWARD" &&
+                        "border-amber-200 bg-amber-50 text-amber-700",
+                      transaction.rawType === "ADJUSTMENT" &&
+                        "border-slate-200 bg-slate-50 text-slate-700",
+                      transaction.rawType === "PRODUCTION_OUTPUT" &&
+                        "border-blue-200 bg-blue-50 text-blue-700",
+                      transaction.rawType === "PRODUCTION_CONSUMPTION" &&
+                        "border-violet-200 bg-violet-50 text-violet-700"
+                    )}
+                    variant="outline"
+                  >
+                    {transaction.type}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
                     <p className="font-medium text-foreground">{transaction.product}</p>
-                    <p className="text-xs text-muted-foreground">{transaction.variant}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Ref: {transaction.reference}
+                    </p>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{transaction.variant}</TableCell>
-                <TableCell className="font-semibold tabular-nums">
+                <TableCell className="font-medium text-slate-600">
+                  {transaction.variant}
+                </TableCell>
+                <TableCell
+                  className={cn(
+                    "font-semibold tabular-nums",
+                    transaction.signedQuantity > 0 && "text-emerald-700",
+                    transaction.signedQuantity < 0 && "text-rose-700"
+                  )}
+                >
+                  {transaction.signedQuantity > 0 ? "+" : ""}
                   {transaction.quantity}
                 </TableCell>
                 <TableCell>{transaction.unit}</TableCell>
@@ -65,11 +94,12 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
                 <TableCell className="text-muted-foreground">
                   {transaction.destination}
                 </TableCell>
-                <TableCell>{transaction.user}</TableCell>
-                <TableCell className="font-medium text-foreground">
-                  {transaction.reference}
+                <TableCell>
+                  <div className="max-w-48">
+                    <p className="truncate font-medium text-foreground">{transaction.user}</p>
+                  </div>
                 </TableCell>
-                <TableCell className="max-w-64 whitespace-normal text-sm leading-5 text-muted-foreground">
+                <TableCell className="max-w-72 whitespace-normal text-sm leading-5 text-muted-foreground">
                   {transaction.remarks || "No remarks"}
                 </TableCell>
               </TableRow>
@@ -78,7 +108,7 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
             <TableRow>
               <TableCell
                 className="p-0"
-                colSpan={11}
+                colSpan={10}
               >
                 <EmptyState
                   title="No transactions found"

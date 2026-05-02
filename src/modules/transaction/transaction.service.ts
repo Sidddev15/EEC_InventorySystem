@@ -1,12 +1,10 @@
 import { TransactionType } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
-import { type TransactionFilters, type TransactionLogItem } from "./transaction.types";
-
-const userLabels: Record<string, string> = {
-  admin: "Admin User",
-  factory: "Factory User",
-  corporate: "Corporate User",
-};
+import {
+  type TransactionFilters,
+  type TransactionLogItem,
+  type TransactionUserOption,
+} from "./transaction.types";
 
 export const transactionTypeOptions = Object.values(TransactionType);
 
@@ -38,6 +36,10 @@ function formatQuantity(value: { toString(): string }) {
   return new Intl.NumberFormat("en-IN", {
     maximumFractionDigits: 3,
   }).format(Number(value.toString()));
+}
+
+function toSignedNumber(value: { toString(): string }) {
+  return Number(value.toString());
 }
 
 function movementSource(type: TransactionType, location: string) {
@@ -148,23 +150,72 @@ export async function listTransactions(
     },
   });
 
+  const userIds = Array.from(
+    new Set(
+      transactions
+        .map((transaction) => transaction.createdByUserId)
+        .filter((value): value is string => Boolean(value))
+    )
+  );
+
+  const users = userIds.length
+    ? await db.user.findMany({
+        where: {
+          id: {
+            in: userIds,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          role: true,
+        },
+      })
+    : [];
+
+  const userById = new Map(
+    users.map((user) => [user.id, `${user.name} (${user.role})`])
+  );
+
   return transactions.map((transaction) => ({
     id: transaction.id,
+    rawType: transaction.type,
     dateTime: formatDateTime(transaction.createdAt),
     type: transaction.type.replaceAll("_", " "),
     product: transaction.variant.product.name,
     variant: transaction.variant.name,
     quantity: formatQuantity(transaction.quantity),
+    signedQuantity: toSignedNumber(transaction.quantity),
     unit: transaction.unit.code,
     source: movementSource(transaction.type, transaction.location.name),
     destination: movementDestination(transaction.type, transaction.location.name),
     user: transaction.createdByUserId
-      ? userLabels[transaction.createdByUserId] ?? transaction.createdByUserId
+      ? userById.get(transaction.createdByUserId) ??
+        transaction.createdByUserId.slice(0, 12)
       : "System",
     reference:
       transaction.referenceNo ??
       transaction.productionEntry?.productionNo ??
       transaction.transactionNo,
     remarks: transaction.notes ?? "",
+  }));
+}
+
+export async function listTransactionUsers(): Promise<TransactionUserOption[]> {
+  const users = await db.user.findMany({
+    where: {
+      isActive: true,
+    },
+    orderBy: [{ role: "asc" }, { name: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      role: true,
+    },
+  });
+
+  return users.map((user) => ({
+    id: user.id,
+    label: `${user.name} (${user.role})`,
   }));
 }

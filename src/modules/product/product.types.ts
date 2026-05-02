@@ -24,6 +24,15 @@ export type ProductOption = {
   category: string;
 };
 
+export type ProductSearchResult = {
+  productId: string;
+  productName: string;
+  category: string;
+  variantId: string | null;
+  variantName: string | null;
+  matchType: "product" | "variant";
+};
+
 export type UnitOption = {
   id: string;
   code: string;
@@ -36,11 +45,16 @@ export type ProductDetail = {
   category: string;
   description: string | null;
   isActive: boolean;
+  variantsCount: number;
   variants: Array<{
     id: string;
     name: string;
     unit: string;
     inventoryType: string;
+    thickness: string | null;
+    gsm: number | null;
+    material: string | null;
+    size: string | null;
     isActive: boolean;
   }>;
 };

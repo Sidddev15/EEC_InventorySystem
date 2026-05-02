@@ -3,7 +3,10 @@ import { TransactionFilters } from "@/components/transactions/transaction-filter
 import { TransactionTable } from "@/components/transactions/transaction-table";
 import { requireUser } from "@/lib/auth";
 import { listProductOptions } from "@/modules/product/product.service";
-import { listTransactions } from "@/modules/transaction/transaction.service";
+import {
+  listTransactions,
+  listTransactionUsers,
+} from "@/modules/transaction/transaction.service";
 import { type TransactionFilters as TransactionFilterValues } from "@/modules/transaction/transaction.types";
 
 type TransactionsPageProps = {
@@ -30,9 +33,10 @@ export default async function TransactionsPage({
     dateTo: params.dateTo,
     userId: params.userId,
   };
-  const [transactions, products] = await Promise.all([
+  const [transactions, products, users] = await Promise.all([
     listTransactions(filters),
     listProductOptions(),
+    listTransactionUsers(),
   ]);
 
   return (
@@ -42,7 +46,7 @@ export default async function TransactionsPage({
         description="Audit inventory movement by product, type, date, and user."
       />
 
-      <TransactionFilters filters={filters} products={products} />
+      <TransactionFilters filters={filters} products={products} users={users} />
       <TransactionTable transactions={transactions} />
     </div>
   );

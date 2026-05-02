@@ -10,11 +10,14 @@ export async function POST(request: Request) {
       user: result.user,
       redirectTo: result.redirectTo,
     });
+    const secureCookie =
+      new URL(request.url).protocol === "https:" ||
+      process.env.AUTH_URL?.startsWith("https://") === true;
 
     response.cookies.set(SESSION_COOKIE_NAME, result.token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: secureCookie,
       path: "/",
       maxAge: 60 * 60 * 8,
     });
