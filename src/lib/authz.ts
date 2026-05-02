@@ -2,7 +2,7 @@ import { type UserRole } from "@/lib/constants/roles";
 
 export const ROLE_HOME_PATH: Record<UserRole, string> = {
   ADMIN: "/dashboard",
-  FACTORY: "/dashboard",
+  FACTORY: "/factory",
   CORPORATE: "/dashboard",
 };
 
@@ -13,6 +13,7 @@ export const ROLE_ALLOWED_PATHS: Record<UserRole, readonly string[]> = {
     "/api/ai/reorder-insight",
     "/products",
     "/api/products",
+    "/api/products/search",
     "/api/variants",
     "/api/ai",
     "/api/inventory",
@@ -28,6 +29,7 @@ export const ROLE_ALLOWED_PATHS: Record<UserRole, readonly string[]> = {
   FACTORY: [
     "/dashboard",
     "/factory",
+    "/api/products/search",
     "/inventory",
     "/api/inventory/inward",
     "/production",
@@ -36,6 +38,7 @@ export const ROLE_ALLOWED_PATHS: Record<UserRole, readonly string[]> = {
   ],
   CORPORATE: [
     "/dashboard",
+    "/api/products/search",
     "/inventory",
     "/transactions",
     "/reports",

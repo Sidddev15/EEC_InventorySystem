@@ -3,6 +3,7 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { SettingsHubCard } from "@/components/settings/settings-hub-card";
 import { requireUser } from "@/lib/auth";
+import { ROLE_HOME_PATH } from "@/lib/authz";
 import {
   buildSettingsSections,
   getSettingsOverview,
@@ -13,7 +14,7 @@ export default async function SettingsPage() {
   const user = await requireUser();
 
   if (user.role !== "ADMIN") {
-    redirect("/dashboard");
+    redirect(ROLE_HOME_PATH[user.role]);
   }
 
   const overview = await getSettingsOverview();
